@@ -10,14 +10,27 @@ type AuthenticatedRequest = Request & {
   };
 };
 
+const isKnownBadRequestError = (error: unknown): boolean => {
+  return (
+    error instanceof Error &&
+    (error.name === 'ValidationError' || error.name === 'CastError')
+  );
+};
+
 const handleError = (res: Response, error: unknown): void => {
   if (error instanceof HttpError) {
     res.status(error.statusCode).json({ message: error.message });
     return;
   }
 
-  const message = error instanceof Error ? error.message : 'Error interno';
-  res.status(500).json({ message });
+  console.error('Unhandled error in AuthController:', error);
+
+  if (isKnownBadRequestError(error)) {
+    res.status(400).json({ message: 'Solicitud invalida' });
+    return;
+  }
+
+  res.status(500).json({ message: 'Error interno' });
 };
 
 export class AuthController {

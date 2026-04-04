@@ -24,14 +24,14 @@ const parseJwtHours = (value: string | undefined): number => {
 };
 
 export const env = {
-  PORT: Number(process.env.PORT ?? 3000),
+  PORT: parsePositiveInt(process.env.PORT, 3000),
   MONGO_URI: requireEnv('MONGO_URI'),
   JWT_SECRET: requireEnv('JWT_SECRET'),
   JWT_EXPIRES_IN_HOURS: parseJwtHours(process.env.JWT_EXPIRES_IN_HOURS),
   SHEERID_BASE_URL: process.env.SHEERID_BASE_URL ?? 'https://services-sandbox.sheerid.com/rest/v2',
   SHEERID_API_TOKEN: requireEnv('SHEERID_API_TOKEN'),
   SMTP_HOST: requireEnv('SMTP_HOST'),
-  SMTP_PORT: Number(process.env.SMTP_PORT ?? 587),
+  SMTP_PORT: parsePositiveInt(process.env.SMTP_PORT, 587),
   SMTP_SECURE: process.env.SMTP_SECURE === 'true',
   SMTP_USER: requireEnv('SMTP_USER'),
   SMTP_PASS: requireEnv('SMTP_PASS'),

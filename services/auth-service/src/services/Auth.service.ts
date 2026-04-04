@@ -50,11 +50,23 @@ class AuthService {
   });
 
   private normalizeEmail(correo: string): string {
-    return correo.trim().toLowerCase();
+    if (typeof correo !== 'string') {
+      throw new HttpError(400, 'El campo "correo" es obligatorio y debe ser un string no vacío');
+    }
+
+    const normalizedEmail = correo.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      throw new HttpError(400, 'El campo "correo" es obligatorio y debe ser un string no vacío');
+    }
+
+    return normalizedEmail;
   }
 
   private validateInstitutionalEmail(correo: string): void {
-    if (!UPTC_EMAIL_REGEX.test(correo)) {
+    const normalizedEmail = this.normalizeEmail(correo);
+
+    if (!UPTC_EMAIL_REGEX.test(normalizedEmail)) {
       throw new HttpError(400, 'El correo debe ser institucional (@uptc.edu.co)');
     }
   }
