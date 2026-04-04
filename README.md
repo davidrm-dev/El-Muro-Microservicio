@@ -33,3 +33,35 @@ Arquitectura distribuida políglota para la gestión académica y social. Los mi
 
 ## Variables de Entorno
 Cada microservicio requiere variables de entorno para la configuración de la base de datos y el registro en Eureka. Asegúrate de configurar correctamente estas variables antes de ejecutar los servicios.
+
+## Seeders
+
+### Auth Service (MongoDB)
+
+El microservicio `auth-service` incluye un seeder de usuarios base en:
+
+- `services/auth-service/src/database/seeds/seed-users.ts`
+
+Usuarios creados/actualizados por defecto:
+
+- `admin.principal@uptc.edu.co` (rol `admin`, activo, verificado)
+- `estudiante.uno@uptc.edu.co` (rol `estudiante`, puntos iniciales 120)
+- `estudiante.dos@uptc.edu.co` (rol `estudiante`, puntos iniciales 40, deshabilitado)
+
+### Cómo correr el seeder
+
+1. Asegúrate de tener MongoDB corriendo y `MONGO_URI` configurada.
+2. Instala dependencias del servicio:
+
+```bash
+cd services/auth-service
+npm install
+```
+
+3. Ejecuta el seeder:
+
+```bash
+npm run seed:users
+```
+
+El script es idempotente (si el usuario existe por correo, lo actualiza; si no existe, lo crea).

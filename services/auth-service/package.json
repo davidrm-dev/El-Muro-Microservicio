@@ -7,7 +7,8 @@
     "start": "node dist/server.js",
     "dev": "ts-node --files src/server.ts",
     "build": "tsc",
-    "test": "jest --runInBand"
+    "test": "jest --runInBand",
+    "seed:users": "ts-node --files src/database/seeds/seed-users.ts"
   },
   "keywords": [],
   "author": "",
