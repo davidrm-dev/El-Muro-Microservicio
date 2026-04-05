@@ -8,7 +8,7 @@ Arquitectura distribuida políglota para la gestión académica y social. Los mi
 /el-muro
 ├── /infrastructure
 │   ├── docker-compose.yml         # Orquestación de MongoDB y PostgreSQL
-│   └── /eureka-server             # Registro y Descubrimiento (Spring Cloud)
+│   └── /eureka-server             # Registro y Descubrimiento (Spring Cloud) puerto 8761
 ├── /services
 │   ├── /auth-service              # David: TS + MongoDB (Puerto 3000)
 │   │   └── /src/database/seeds    # Scripts de población de usuarios/roles
