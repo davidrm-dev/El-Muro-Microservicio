@@ -62,6 +62,7 @@ services:
       SERVICE_NAME: carreras-service
       SERVICE_PORT: 8001
       ENVIRONMENT: development
+      JWT_SECRET: tu-secret-key-super-segura-para-desarrollo-12345
       MATERIAS_SERVICE_URL: http://materias-service:8002
     volumes:
       - ../services/carreras-service:/app
@@ -71,8 +72,7 @@ services:
       carreras-db:
         condition: service_healthy
     command: >
-      sh -c 'python scripts/seed.py &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload'
+      sh -c 'uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload'
 
   # ==================== Microservicio Materias ====================
   materias-service:
@@ -92,6 +92,7 @@ services:
       SERVICE_NAME: materias-service
       SERVICE_PORT: 8002
       ENVIRONMENT: development
+      JWT_SECRET: tu-secret-key-super-segura-para-desarrollo-12345
       CARRERAS_SERVICE_URL: http://carreras-service:8001
     volumes:
       - ../services/materias-service:/app
@@ -103,30 +104,71 @@ services:
       carreras-service:
         condition: service_started
     command: >
-      sh -c 'python scripts/seed.py &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload'
+      sh -c 'uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload'
 
-  # ==================== Eureka Server ====================
-  eureka-server:
-    build:
-      context: ../services/eureka-server
-      dockerfile: Dockerfile
-    container_name: eureka-server
+  # ==================== Base de Datos - Auth ====================
+  auth-db:
+    image: mongo:latest
+    container_name: auth-db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
     ports:
-      - "8761:8761"
+      - "27017:27017"
+    volumes:
+      - auth-db-data:/data/db
     networks:
       - el-muro-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== Microservicio Auth ====================
+  auth-service:
+    build:
+      context: ../services/auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    ports:
+      - "3000:3000"
     environment:
-      EUREKA_INSTANCE_HOSTNAME: eureka-server
+      PORT: 3000
+      NODE_ENV: development
+      MONGO_URI: mongodb://admin:password@auth-db:27017/auth_db?authSource=admin
+      JWT_SECRET: tu-secret-key-super-segura-para-desarrollo-12345
+      JWT_EXPIRES_IN_HOURS: 24
+      SHEERID_BASE_URL: https://services-sandbox.sheerid.com/rest/v2
+      SHEERID_API_TOKEN: dummy-token-for-development
+      SMTP_HOST: mailcatcher
+      SMTP_PORT: 1025
+      SMTP_SECURE: "false"
+      SMTP_USER: test@example.com
+      SMTP_PASS: test
+      SMTP_FROM: noreply@uptc.edu.co
+      INTERNAL_SERVICE_SECRET: internal-secret-dev
+      TRUSTED_SERVICE_IDS: carreras-service,materias-service
+      MAX_LOGIN_ATTEMPTS: 5
+      LOGIN_LOCK_MINUTES: 15
+    volumes:
+      - ../services/auth-service:/app
+      - /app/node_modules
+    networks:
+      - el-muro-network
     depends_on:
-      - carreras-service
-      - materias-service
+      auth-db:
+        condition: service_healthy
+    command: >
+      sh -c 'npm run dev'
 
 # ==================== Volúmenes ====================
 volumes:
   carreras-db-data:
     driver: local
   materias-db-data:
+    driver: local
+  auth-db-data:
     driver: local
 
 # ==================== Redes ====================

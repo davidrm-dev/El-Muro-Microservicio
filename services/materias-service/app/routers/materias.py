@@ -50,6 +50,24 @@ def obtener_materias(
     return MateriaService.get_all_materias(db, skip, limit)
 
 
+@router.get("/carrera/{carrera_id}", response_model=list[MateriaResponse])
+def obtener_materias_por_carrera(
+    carrera_id: int,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=100),
+    db: Session = Depends(get_db),
+    role: str = Depends(require_any_role)
+):
+    """
+    Obtener todas las materias de una carrera específica (Cualquier rol)
+    
+    - **carrera_id**: ID de la carrera
+    - **skip**: Número de registros a saltar (paginación)
+    - **limit**: Número máximo de registros a retornar
+    """
+    return MateriaService.get_materias_by_carrera(db, carrera_id, skip, limit)
+
+
 @router.get("/{materia_id}", response_model=MateriaDetailResponse)
 def obtener_materia(
     materia_id: int,

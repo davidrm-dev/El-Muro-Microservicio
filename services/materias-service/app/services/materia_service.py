@@ -2,8 +2,32 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models.materia import Materia, Tema
 from app.schemas.materia import MateriaCreate, MateriaUpdate, TemaCreate
-from app.core.external_services import CarrerasServiceClient
+from app.core.config import get_settings
 from fastapi import HTTPException
+import httpx
+import logging
+
+logger = logging.getLogger(__name__)
+
+
+class CarrerasServiceClient:
+    """Cliente para consultar el servicio de carreras"""
+    
+    @staticmethod
+    def carrera_exists(carrera_id: int) -> bool:
+        """Verificar si una carrera existe en el servicio de carreras"""
+        try:
+            settings = get_settings()
+            carreras_url = f"{settings.carreras_service_url}/api/carreras/{carrera_id}"
+            
+            with httpx.Client(timeout=5.0) as client:
+                # Nota: Esta llamada NO incluye Authorization porque es interna
+                response = client.get(carreras_url)
+                return response.status_code == 200
+        except Exception as e:
+            logger.error(f"Error verificando carrera: {str(e)}")
+            # Si no podemos conectar, asumir que la carrera NO existe
+            return False
 
 
 class MateriaService:
@@ -12,13 +36,12 @@ class MateriaService:
     @staticmethod
     def create_materia(db: Session, materia_data: MateriaCreate) -> Materia:
         """Crear una nueva materia"""
-        # Validar que la carrera existe ANTES de crear la materia
-        # Esto es opcional - puede validarse solo por FK o por llamada a API
-        # Por ahora, usamos FK pero dejamos el código para validar por API
-        
-        # Opción 1: Validar por API (comentada)
-        # if not CarrerasServiceClient.carrera_exists(materia_data.carrera_id):
-        #     raise HTTPException(status_code=404, detail="Carrera no encontrada")
+        # Validar que la carrera existe en el servicio de carreras
+        if not CarrerasServiceClient.carrera_exists(materia_data.carrera_id):
+            raise HTTPException(
+                status_code=404, 
+                detail="Carrera no encontrada"
+            )
         
         db_materia = Materia(
             nombre=materia_data.nombre.strip(),
