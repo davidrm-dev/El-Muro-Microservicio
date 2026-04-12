@@ -77,16 +77,3 @@ def eliminar_carrera(
     Eliminar una carrera (Solo ADMIN)
     """
     return CarreraService.delete_carrera(db, carrera_id)
-
-
-@router.get("/{carrera_id}/materias", response_model=list)
-def obtener_materias_carrera(
-    carrera_id: int,
-    db: Session = Depends(get_db),
-    role: str = Depends(require_any_role)
-):
-    """
-    Obtener todas las materias de una carrera (Cualquier rol)
-    """
-    carrera = CarreraService.get_carrera_by_id(db, carrera_id)
-    return carrera.materias
