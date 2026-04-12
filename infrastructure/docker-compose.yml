@@ -1,0 +1,135 @@
+version: '3.8'
+
+services:
+  # ==================== Base de Datos - Carreras ====================
+  carreras-db:
+    image: postgres:15-alpine
+    container_name: carreras-db
+    environment:
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: carreras_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - carreras-db-data:/var/lib/postgresql/data
+    networks:
+      - el-muro-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usuario -d carreras_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== Base de Datos - Materias ====================
+  materias-db:
+    image: postgres:15-alpine
+    container_name: materias-db
+    environment:
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: materias_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - materias-db-data:/var/lib/postgresql/data
+    networks:
+      - el-muro-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usuario -d materias_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      carreras-db:
+        condition: service_healthy
+
+  # ==================== Microservicio Carreras ====================
+  carreras-service:
+    build:
+      context: ../services/carreras-service
+      dockerfile: Dockerfile
+    container_name: carreras-service
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: postgresql://usuario:password@carreras-db:5432/carreras_db
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: carreras_db
+      POSTGRES_HOST: carreras-db
+      POSTGRES_PORT: 5432
+      SERVICE_NAME: carreras-service
+      SERVICE_PORT: 8001
+      ENVIRONMENT: development
+      MATERIAS_SERVICE_URL: http://materias-service:8002
+    volumes:
+      - ../services/carreras-service:/app
+    networks:
+      - el-muro-network
+    depends_on:
+      carreras-db:
+        condition: service_healthy
+    command: >
+      sh -c 'python scripts/seed.py &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload'
+
+  # ==================== Microservicio Materias ====================
+  materias-service:
+    build:
+      context: ../services/materias-service
+      dockerfile: Dockerfile
+    container_name: materias-service
+    ports:
+      - "8002:8002"
+    environment:
+      DATABASE_URL: postgresql://usuario:password@materias-db:5432/materias_db
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: materias_db
+      POSTGRES_HOST: materias-db
+      POSTGRES_PORT: 5432
+      SERVICE_NAME: materias-service
+      SERVICE_PORT: 8002
+      ENVIRONMENT: development
+      CARRERAS_SERVICE_URL: http://carreras-service:8001
+    volumes:
+      - ../services/materias-service:/app
+    networks:
+      - el-muro-network
+    depends_on:
+      materias-db:
+        condition: service_healthy
+      carreras-service:
+        condition: service_started
+    command: >
+      sh -c 'python scripts/seed.py &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload'
+
+  # ==================== Eureka Server ====================
+  eureka-server:
+    build:
+      context: ../services/eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - el-muro-network
+    environment:
+      EUREKA_INSTANCE_HOSTNAME: eureka-server
+    depends_on:
+      - carreras-service
+      - materias-service
+
+# ==================== Volúmenes ====================
+volumes:
+  carreras-db-data:
+    driver: local
+  materias-db-data:
+    driver: local
+
+# ==================== Redes ====================
+networks:
+  el-muro-network:
+    driver: bridge

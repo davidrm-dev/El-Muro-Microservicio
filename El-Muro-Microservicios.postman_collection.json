@@ -1,0 +1,547 @@
+{
+  "info": {
+    "name": "El Muro Plataforma Académica - Microservicios",
+    "description": "Colección de API para Carreras y Materias",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "🏥 Health Checks",
+      "item": [
+        {
+          "name": "Carreras - Health Check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8001/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Materias - Health Check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8002/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🎓 Carreras",
+      "item": [
+        {
+          "name": "Listar Carreras",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ESTUDIANTE",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8001/api/carreras?skip=0&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras"],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            },
+            "description": "Obtener lista de todas las carreras con paginación"
+          }
+        },
+        {
+          "name": "Crear Carrera (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ingeniería de Sistemas\",\n  \"descripcion\": \"Carrera enfocada en sistemas computacionales, programación y tecnología de la información\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8001/api/carreras/crear",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras", "crear"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Carrera por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ESTUDIANTE",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8001/api/carreras/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras", "1"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Carrera (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Ingeniería de Sistemas Computacionales\",\n  \"descripcion\": \"Descripción actualizada\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8001/api/carreras/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Carrera (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8001/api/carreras/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras", "1"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Materias de Carrera",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ESTUDIANTE",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8001/api/carreras/1/materias",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras", "1", "materias"]
+            }
+          }
+        },
+        {
+          "name": "Crear Materia en Carrera (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Bases de Datos\",\n  \"semestre\": 3\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8001/api/carreras/1/materias",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras", "1", "materias"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📚 Materias",
+      "item": [
+        {
+          "name": "Listar Materias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ESTUDIANTE",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8002/api/materias?skip=0&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias"],
+              "query": [
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar Materias por Carrera",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ESTUDIANTE",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8002/api/materias?carrera_id=1&skip=0&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias"],
+              "query": [
+                {
+                  "key": "carrera_id",
+                  "value": "1"
+                },
+                {
+                  "key": "skip",
+                  "value": "0"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Crear Materia (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Programación I\",\n  \"semestre\": 1,\n  \"carrera_id\": 1,\n  \"descripcion\": \"Introducción a la programación\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8002/api/materias/crear",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias", "crear"]
+            }
+          }
+        },
+        {
+          "name": "Obtener Materia por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ESTUDIANTE",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8002/api/materias/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias", "1"]
+            }
+          }
+        },
+        {
+          "name": "Actualizar Materia (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Programación I (Python)\",\n  \"semestre\": 1\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8002/api/materias/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias", "1"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Materia (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8002/api/materias/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏷️ Temas",
+      "item": [
+        {
+          "name": "Listar Temas de Materia",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ESTUDIANTE",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8002/api/materias/1/temas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias", "1", "temas"]
+            }
+          }
+        },
+        {
+          "name": "Crear Tema (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Variables y Tipos de Datos\",\n  \"descripcion\": \"Entender variables y tipos de datos en programación\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8002/api/materias/1/temas",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias", "1", "temas"]
+            }
+          }
+        },
+        {
+          "name": "Eliminar Tema (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "ADMIN",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8002/api/materias/temas/1",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8002",
+              "path": ["api", "materias", "temas", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 Pruebas de Seguridad",
+      "item": [
+        {
+          "name": "Error - Sin Header x-role",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8001/api/carreras",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras"]
+            }
+          }
+        },
+        {
+          "name": "Error - Rol Inválido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-role",
+                "value": "SUPERADMIN",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8001/api/carreras",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras"]
+            }
+          }
+        },
+        {
+          "name": "Error - Estudiante intenta crear carrera",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "x-role",
+                "value": "ESTUDIANTE",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Nueva Carrera\",\n  \"descripcion\": \"Intento de crear como estudiante\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8001/api/carreras/crear",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "8001",
+              "path": ["api", "carreras", "crear"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
