@@ -20,6 +20,8 @@ public class Post {
     private LocalDateTime createdAt;
     private Integer authorId;
     private Integer topicId;
+    private java.util.Set<Integer> unlockedByUsers = new java.util.HashSet<>();
+    private java.util.Set<Integer> votedByUsers = new java.util.HashSet<>();
 
     public Integer getId() {
         return id;
@@ -107,5 +109,21 @@ public class Post {
 
     public void setTopicId(Integer topicId) {
         this.topicId = topicId;
+    }
+
+    public java.util.Set<Integer> getUnlockedByUsers() {
+        return unlockedByUsers;
+    }
+
+    public void setUnlockedByUsers(java.util.Set<Integer> unlockedByUsers) {
+        this.unlockedByUsers = unlockedByUsers;
+    }
+
+    public java.util.Set<Integer> getVotedByUsers() {
+        return votedByUsers;
+    }
+
+    public void setVotedByUsers(java.util.Set<Integer> votedByUsers) {
+        this.votedByUsers = votedByUsers;
     }
 }

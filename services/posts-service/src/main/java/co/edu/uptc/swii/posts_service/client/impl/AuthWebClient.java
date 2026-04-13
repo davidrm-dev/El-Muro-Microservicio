@@ -1,17 +1,19 @@
 package co.edu.uptc.swii.posts_service.client.impl;
 
-import co.edu.uptc.swii.posts_service.client.AuthClient;
-import co.edu.uptc.swii.posts_service.client.dto.DeductPointsRequest;
-import co.edu.uptc.swii.posts_service.client.dto.InternalPointsRequest;
-import co.edu.uptc.swii.posts_service.client.dto.InternalPointsResponse;
-import co.edu.uptc.swii.posts_service.util.HmacSigner;
 import java.time.Instant;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import co.edu.uptc.swii.posts_service.client.AuthClient;
+import co.edu.uptc.swii.posts_service.client.dto.DeductPointsRequest;
+import co.edu.uptc.swii.posts_service.client.dto.InternalPointsRequest;
+import co.edu.uptc.swii.posts_service.client.dto.InternalPointsResponse;
+import co.edu.uptc.swii.posts_service.util.HmacSigner;
 
 @Component
 public class AuthWebClient implements AuthClient {
@@ -38,6 +40,12 @@ public class AuthWebClient implements AuthClient {
 
     @Value("${integration.auth-service.deduct-points-sign-path}")
     private String deductPointsSignPath;
+
+    @Value("${integration.auth-service.add-points-api-path}")
+    private String addPointsApiPath;
+
+    @Value("${integration.auth-service.add-points-sign-path}")
+    private String addPointsSignPath;
 
     @Value("${integration.internal.service-id}")
     private String serviceId;
@@ -82,6 +90,40 @@ public class AuthWebClient implements AuthClient {
                     headers.add("x-service-signature", signature);
                 })
                 .bodyValue(new DeductPointsRequest(points, reason))
+                .retrieve()
+                .toBodilessEntity()
+                .block();
+        } catch (WebClientResponseException exception) {
+            if (exception.getStatusCode() == HttpStatus.BAD_REQUEST || exception.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw exception;
+            }
+            throw new WebClientResponseException(
+                "Auth service call failed",
+                HttpStatus.BAD_GATEWAY.value(),
+                HttpStatus.BAD_GATEWAY.getReasonPhrase(),
+                null,
+                null,
+                null
+            );
+        }
+    }
+
+    @Override
+    public void addPoints(Integer userId, int points, String reason) {
+        String apiPath = addPointsApiPath.replace("{userId}", String.valueOf(userId));
+        String signPath = addPointsSignPath.replace("{userId}", String.valueOf(userId));
+        String timestamp = String.valueOf(Instant.now().toEpochMilli());
+        String signature = hmacSigner.sign(serviceId, timestamp, HttpMethod.PATCH.name(), signPath);
+
+        try {
+            webClient.patch()
+                .uri(authBaseUrl + apiPath)
+                .headers(headers -> {
+                    headers.add("x-service-id", serviceId);
+                    headers.add("x-service-timestamp", timestamp);
+                    headers.add("x-service-signature", signature);
+                })
+                .bodyValue(new DeductPointsRequest(points, reason)) // Assuming same DTO structure or generic DTO
                 .retrieve()
                 .toBodilessEntity()
                 .block();
