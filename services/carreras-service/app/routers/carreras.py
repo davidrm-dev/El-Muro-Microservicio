@@ -42,6 +42,22 @@ def obtener_carreras(
     return CarreraService.get_all_carreras(db, skip, limit)
 
 
+@router.get("/_exists/{carrera_id}")
+def existe_carrera(
+    carrera_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Verificar si una carrera existe (Endpoint público para validación interna)
+    Retorna {"exists": true} o {"exists": false}
+    """
+    try:
+        carrera = CarreraService.get_carrera_by_id(db, carrera_id)
+        return {"exists": True}
+    except:
+        return {"exists": False}
+
+
 @router.get("/{carrera_id}", response_model=CarreraDetailResponse)
 def obtener_carrera(
     carrera_id: int,

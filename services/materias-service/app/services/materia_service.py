@@ -18,14 +18,17 @@ class CarrerasServiceClient:
         """Verificar si una carrera existe en el servicio de carreras"""
         try:
             settings = get_settings()
-            carreras_url = f"{settings.carreras_service_url}/api/carreras/{carrera_id}"
+            # Usar el endpoint público de validación sin autenticación
+            carreras_url = f"{settings.carreras_service_url}/api/carreras/_exists/{carrera_id}"
             
             with httpx.Client(timeout=5.0) as client:
-                # Nota: Esta llamada NO incluye Authorization porque es interna
                 response = client.get(carreras_url)
-                return response.status_code == 200
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get("exists", False)
+                return False
         except Exception as e:
-            logger.error(f"Error verificando carrera: {str(e)}")
+            logger.error(f"Error verificando carrera {carrera_id}: {str(e)}")
             # Si no podemos conectar, asumir que la carrera NO existe
             return False
 
@@ -96,6 +99,19 @@ class MateriaService:
         db.delete(materia)
         db.commit()
         return {"message": "Materia eliminada exitosamente"}
+    
+    @staticmethod
+    def delete_materias_by_carrera(db: Session, carrera_id: int) -> dict:
+        """Eliminar todas las materias de una carrera (llamado por carreras-service)"""
+        materias = db.query(Materia).filter(Materia.carrera_id == carrera_id).all()
+        count = len(materias)
+        for materia in materias:
+            db.delete(materia)
+        db.commit()
+        return {
+            "message": f"Se eliminaron {count} materia(s) de la carrera",
+            "deleted_count": count
+        }
     
     @staticmethod
     def get_materia_count(db: Session) -> int:

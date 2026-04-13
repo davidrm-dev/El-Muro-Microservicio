@@ -105,6 +105,20 @@ def eliminar_materia(
     return MateriaService.delete_materia(db, materia_id)
 
 
+@router.delete("/carrera/{carrera_id}/all")
+def eliminar_materias_por_carrera(
+    carrera_id: int,
+    db: Session = Depends(get_db)
+):
+    """
+    Endpoint INTERNO: Eliminar todas las materias de una carrera
+    (Llamado automáticamente por carreras-service cuando se elimina una carrera)
+    
+    Sin autenticación requerida - Solo para comunicación interna entre servicios
+    """
+    return MateriaService.delete_materias_by_carrera(db, carrera_id)
+
+
 # ==================== Endpoints de Temas ====================
 
 @router.post("/{materia_id}/temas", response_model=TemaResponse, status_code=201)
