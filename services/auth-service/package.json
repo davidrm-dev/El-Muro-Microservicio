@@ -35,8 +35,8 @@
     "jest": "^30.2.0",
     "mongodb-memory-server": "^10.2.3",
     "supertest": "^7.1.4",
-    "ts-node": "^10.9.2",
     "ts-jest": "^29.4.4",
+    "ts-node": "^10.9.2",
     "typescript": "^6.0.2"
   }
 }
