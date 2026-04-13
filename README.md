@@ -45,6 +45,49 @@ MATERIAS SERVICE (8002)
 
 ---
 
+---
+
+## ⚠️ ARQUITECTURA: DATOS SEPARADOS POR SERVICIO
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│         TWO POSTGRES INSTANCES - ZERO DATA SHARING              │
+│         (Database-per-Service Pattern)                           │
+└─────────────────────────────────────────────────────────────────┘
+
+CARRERAS SERVICE (8001)
+└─► carreras_db (PostgreSQL 15)
+    │ Puerto: 5432
+    │ Host: carreras-db
+    │ Usuario: usuario
+    │ Password: password
+    └─ Volumen: carreras-db-data
+       ├── Tabla: carreras (gestión de carreras)
+       └── Tabla: materias (materias del servicio carreras)
+
+─────────────────────────────────────────────────────────────────
+
+MATERIAS SERVICE (8002)
+└─► materias_db (PostgreSQL 15)
+    │ Puerto: 5433
+    │ Host: materias-db
+    │ Usuario: usuario
+    │ Password: password
+    └─ Volumen: materias-db-data
+       ├── Tabla: materias (materias del servicio materias)
+       └── Tabla: temas (temas de materias)
+
+─────────────────────────────────────────────────────────────────
+
+✅ RESULTADO:
+   • DOS espacios de almacenamiento COMPLETAMENTE SEPARADOS
+   • CERO compartición de datos a nivel de base de datos
+   • Servicios comunican SOLO por HTTP/REST API
+   • Cada servicio es autónomo e independiente
+```
+
+---
+
 ```text
 El-Muro-Microservicio/
 ├── infrastructure/
@@ -79,7 +122,6 @@ El-Muro-Microservicio/
 ├── El-Muro-Microservicios.postman_collection.json  📤 Colección Postman
 └── README.md
 ```
-
 **Leyenda**: ✅ Completado | 📝 Próximo | ⚡ Utilidad
 
 ## 🚀 Inicio Rápido
@@ -128,8 +170,6 @@ docker exec materias-db psql -U usuario -d materias_db -c "\dt"
 3. Ejecutar requests de ejemplo
 
 **→ Ver [GUIA_RAPIDA.md](GUIA_RAPIDA.md) para detalles**
-
----
 
 ## 📚 Microservicios Implementados
 
@@ -203,11 +243,11 @@ curl -H "x-role: ADMIN" http://localhost:8001/api/carreras/crear \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"nombre": "Nueva Carrera", "descripcion": "Descripción"}'
-```
+  ```
 
-### Futura Integración JWT
+  ### Futura Integración JWT
 
-Ver → [MICROSERVICIOS_DOCUMENTACION.md#Futura-Integración-JWT](MICROSERVICIOS_DOCUMENTACION.md)
+  Ver → [MICROSERVICIOS_DOCUMENTACION.md#Futura-Integración-JWT](MICROSERVICIOS_DOCUMENTACION.md)
 
 ---
 
