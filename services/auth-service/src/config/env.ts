@@ -25,6 +25,11 @@ const parseJwtHours = (value: string | undefined): number => {
 
 export const env = {
   PORT: parsePositiveInt(process.env.PORT, 3000),
+  EUREKA_ENABLED: process.env.EUREKA_ENABLED === 'true',
+  EUREKA_HOST: process.env.EUREKA_HOST ?? 'localhost',
+  EUREKA_PORT: parsePositiveInt(process.env.EUREKA_PORT, 8761),
+  EUREKA_SERVICE_NAME: process.env.EUREKA_SERVICE_NAME ?? 'auth-service',
+  EUREKA_INSTANCE_HOST: process.env.EUREKA_INSTANCE_HOST ?? process.env.HOSTNAME ?? 'localhost',
   MONGO_URI: requireEnv('MONGO_URI'),
   JWT_SECRET: requireEnv('JWT_SECRET'),
   JWT_EXPIRES_IN_HOURS: parseJwtHours(process.env.JWT_EXPIRES_IN_HOURS),

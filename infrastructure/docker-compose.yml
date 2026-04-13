@@ -2,30 +2,16 @@ version: '3.8'
 services:
   # ==================== Servidor de Descubrimiento ====================
   eureka-server:
-    image: steeltoeoss/eureka-server:latest
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
     container_name: eureka-server
     ports:
       - "8761:8761"
     networks:
       - el-muro-network
 
-  # ==================== API Gateway ====================
-  api-gateway:
-    build:
-      context: ../services/api-gateway
-      dockerfile: Dockerfile
-    container_name: api-gateway
-    ports:
-      - "8000:8000"
-    environment:
-      EUREKA_SERVER: http://eureka-server:8761/eureka/
-      SERVICE_PORT: 8000
-    networks:
-      - el-muro-network
-    depends_on:
-      - eureka-server
-
-  # ==================== Base de Datos - Carreras ====================
+  # ==================== Base de Datos - Carreras (PostgreSQL) ====================
   carreras-db:
     image: postgres:15-alpine
     container_name: carreras-db
@@ -45,7 +31,7 @@ services:
       timeout: 5s
       retries: 5
 
-  # ==================== Base de Datos - Materias ====================
+  # ==================== Base de Datos - Materias (PostgreSQL) ====================
   materias-db:
     image: postgres:15-alpine
     container_name: materias-db
@@ -65,67 +51,18 @@ services:
       timeout: 5s
       retries: 5
 
-  # ==================== Microservicio Carreras ====================
-  carreras-service:
-    build:
-      context: ../services/carreras-service
-      dockerfile: Dockerfile
-    container_name: carreras-service
-    ports:
-      - "8001:8001"
-    environment:
-      DATABASE_URL: postgresql://usuario:password@carreras-db:5432/carreras_db
-      EUREKA_SERVER: http://eureka-server:8761/eureka/
-      SERVICE_PORT: 8001
-      # Las siguientes son para referencia interna si se necesitan
-      POSTGRES_USER: usuario
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: carreras_db
-      POSTGRES_HOST: carreras-db
-    networks:
-      - el-muro-network
-    depends_on:
-      carreras-db:
-        condition: service_healthy
-      eureka-server:
-        condition: service_started
-
-  # ==================== Microservicio Materias ====================
-  materias-service:
-    build:
-      context: ../services/materias-service
-      dockerfile: Dockerfile
-    container_name: materias-service
-    ports:
-      - "8002:8002"
-    environment:
-      DATABASE_URL: postgresql://usuario:password@materias-db:5432/materias_db
-      EUREKA_SERVER: http://eureka-server:8761/eureka/
-      SERVICE_PORT: 8002
-      # Las siguientes son para referencia interna si se necesitan
-      POSTGRES_USER: usuario
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: materias_db
-      POSTGRES_HOST: materias-db
-    networks:
-      - el-muro-network
-    depends_on:
-      materias-db:
-        condition: service_healthy
-      eureka-server:
-        condition: service_started
-
-  # ==================== Base de Datos - Auth ====================
-  auth-db:
+  # ==================== Base de Datos (MongoDB) ====================
+  # MongoDB Centralizado para los microservicios: auth-service, posts-service y temas-service
+  mongo-db:
     image: mongo:latest
-    container_name: auth-db
+    container_name: mongo-db
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
     ports:
       - "27017:27017"
     volumes:
-      - auth-db-data:/data/db
+      - mongo-db-data:/data/db
     networks:
       - el-muro-network
     healthcheck:
@@ -134,51 +71,15 @@ services:
       timeout: 5s
       retries: 5
 
-  # ==================== Microservicio Auth ====================
-  auth-service:
-    build:
-      context: ../services/auth-service
-      dockerfile: Dockerfile
-    container_name: auth-service
-    ports:
-      - "3000:3000"
-    environment:
-      PORT: 3000
-      NODE_ENV: development
-      MONGO_URI: mongodb://admin:password@auth-db:27017/auth_db?authSource=admin
-      JWT_SECRET: tu-secret-key-super-segura-para-desarrollo-12345
-      JWT_EXPIRES_IN_HOURS: 24
-      SHEERID_BASE_URL: https://services-sandbox.sheerid.com/rest/v2
-      SHEERID_API_TOKEN: dummy-token-for-development
-      SMTP_HOST: mailcatcher
-      SMTP_PORT: 1025
-      SMTP_SECURE: "false"
-      SMTP_USER: test@example.com
-      SMTP_PASS: test
-      SMTP_FROM: noreply@uptc.edu.co
-      INTERNAL_SERVICE_SECRET: internal-secret-dev
-      TRUSTED_SERVICE_IDS: carreras-service,materias-service
-      MAX_LOGIN_ATTEMPTS: 5
-      LOGIN_LOCK_MINUTES: 15
-    volumes:
-      - ../services/auth-service:/app
-      - /app/node_modules
-    networks:
-      - el-muro-network
-    depends_on:
-      auth-db:
-        condition: service_healthy
-    command: >
-      sh -c 'npm run dev'
-
 # ==================== Volúmenes ====================
 volumes:
   carreras-db-data:
     driver: local
   materias-db-data:
     driver: local
-  auth-db-data:
+  mongo-db-data:
     driver: local
+
 
 # ==================== Redes ====================
 networks:
