@@ -5,6 +5,7 @@ from typing import Any
 import jwt
 from fastapi.testclient import TestClient
 
+from app.core.config import get_settings
 from app.main import app
 from app.repositories.tema_repository import InMemoryTemaRepository
 from app.routers.temas import get_materias_client, get_posts_client, get_tema_repository
@@ -31,7 +32,12 @@ class FakePostsClient(PostsClient):
 
 
 def build_token(role: str, user_id: str = "user-1") -> str:
-    return jwt.encode({"userId": user_id, "rol": role}, "change-this-shared-jwt-secret", algorithm="HS256")
+    settings = get_settings()
+    return jwt.encode(
+        {"userId": user_id, "rol": role},
+        settings.secret_key,
+        algorithm=settings.algorithm,
+    )
 
 
 def build_headers(role: str) -> dict[str, str]:
