@@ -1,5 +1,11 @@
 package co.edu.uptc.swii.posts_service.service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
 import co.edu.uptc.swii.posts_service.client.AuthClient;
 import co.edu.uptc.swii.posts_service.client.TopicClient;
 import co.edu.uptc.swii.posts_service.dto.CreatePostRequest;
@@ -8,10 +14,6 @@ import co.edu.uptc.swii.posts_service.dto.UpdatePostRequest;
 import co.edu.uptc.swii.posts_service.exception.ApiException;
 import co.edu.uptc.swii.posts_service.model.Post;
 import co.edu.uptc.swii.posts_service.repository.RepositoryPost;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
 
 @Service
 public class PostService {
@@ -32,6 +34,7 @@ public class PostService {
         }
 
         boolean topicExists = topicClient.existsById(request.topicId());
+        //boolean topicExists = true; // TODO: Descomentar esta línea y eliminar la siguiente cuando el TopicClient esté implementado
         if (!topicExists) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Topic does not exist");
         }
