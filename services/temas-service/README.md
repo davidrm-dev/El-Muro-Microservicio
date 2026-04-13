@@ -7,7 +7,6 @@ Microservicio encargado de la gestion de temas dentro de El Muro.
 - Crear, editar, consultar y deshabilitar temas.
 - Organizar los temas por `materia_id`.
 - Exponer un punto de consulta para obtener los posts asociados a un tema.
-- Registrarse en Eureka para que un gateway pueda enrutar solicitudes por descubrimiento de servicios.
 
 ## Estado actual
 
@@ -45,7 +44,6 @@ La integracion con `materias-service` y `posts-service` se hace mediante HTTP.
 - `materias-service`: se consulta `GET /api/materias/{materia_id}` para validar la materia asociada.
 - `posts-service`: se intenta consultar `GET /api/posts?temaId={tema_id}` o `GET /posts?temaId={tema_id}`.
 - `eureka-server`: el servicio puede registrarse automaticamente cuando `EUREKA_ENABLED=true`.
-- `api-gateway`: se deja una ruta propuesta en `infrastructure/api-gateway/application.yml` para exponer `/api/temas/**`.
 
 ## Ejecucion local
 
@@ -73,5 +71,5 @@ Variables clave:
 
 ## Notas de integracion
 
-- El repositorio actual todavia no trae un `api-gateway` ejecutable en `main`; por eso se deja el artefacto de ruta listo, pero no una aplicacion completa.
+- La integracion de descubrimiento queda centrada en `eureka-server`; no se deja configuracion de gateway en esta rama.
 - Si `posts-service` todavia no implementa filtro por `temaId`, el endpoint de posts del tema respondera con error `503` indicando que ese contrato aun no existe.

@@ -9,7 +9,6 @@ Arquitectura distribuida poliglota para la gestion academica y social. Los micro
 |-- /infrastructure
 |   |-- docker-compose.yml         # Orquestacion de bases de datos y apoyo local
 |   |-- /eureka-server             # Registro y descubrimiento (Spring Cloud) puerto 8761
-|   `-- /api-gateway               # Artefacto de rutas para el gateway
 |-- /services
 |   |-- /auth-service              # TS + MongoDB (Puerto 3000)
 |   |-- /materias-service          # Python + PostgreSQL
@@ -37,4 +36,3 @@ Su documentacion detallada esta en `services/temas-service/README.md`.
 - `temas-service` valida `materia_id` contra `materias-service`.
 - `temas-service` consulta `posts-service` para listar posts por `temaId`.
 - `temas-service` puede registrarse en `eureka-server`.
-- El gateway puede enrutar `/api/temas/**` usando la ruta declarada en `infrastructure/api-gateway/application.yml`.
