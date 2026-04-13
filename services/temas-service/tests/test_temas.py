@@ -116,6 +116,30 @@ def test_admin_can_disable_tema() -> None:
     teardown_overrides()
 
 
+def test_student_cannot_update_tema() -> None:
+    client, repository = setup_test_client()
+    tema = repository.create({"nombre": "Derivadas", "descripcion": "Inicial", "materia_id": 10})
+
+    response = client.put(
+        f"/api/temas/{tema['id']}",
+        headers=build_headers("estudiante"),
+        json={"descripcion": "Actualizada"},
+    )
+
+    assert response.status_code == 403
+    teardown_overrides()
+
+
+def test_student_cannot_disable_tema() -> None:
+    client, repository = setup_test_client()
+    tema = repository.create({"nombre": "Integrales", "descripcion": None, "materia_id": 10})
+
+    response = client.patch(f"/api/temas/{tema['id']}/disable", headers=build_headers("estudiante"))
+
+    assert response.status_code == 403
+    teardown_overrides()
+
+
 def test_can_get_posts_for_tema() -> None:
     client, repository = setup_test_client()
     tema = repository.create({"nombre": "Limites", "descripcion": None, "materia_id": 10})
