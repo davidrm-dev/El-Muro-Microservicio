@@ -7,7 +7,7 @@ Microservicio encargado de la gestion de temas dentro de El Muro.
 - Crear, editar, consultar y deshabilitar temas.
 - Organizar los temas por `materia_id`.
 - Exponer un punto de consulta para obtener los posts asociados a un tema.
-- Registrarse en `eureka-server` para descubrimiento de servicios.
+
 
 ## Como funciona
 
@@ -78,11 +78,17 @@ EUREKA_SERVER_URL=http://localhost:8761/eureka/
 
 ### 3. Levantar Eureka
 
-Desde `infrastructure/eureka-server/`:
-
-```powershell
-.\mvnw.cmd spring-boot:run
+Desde `infrastructure/eureka-server/`,
+si se necesita limmpiar instalacion antes de corres
+```bash
+mvn clean install 
 ```
+
+```bash
+mvn spring-boot:run -DskipTests 
+```
+
+
 
 Panel:
 
@@ -116,7 +122,13 @@ curl http://localhost:8003/
 Pruebas unitarias:
 
 ```powershell
-.\.venv\Scripts\python -m pytest
+python -m pytest
+```
+
+Seeder de temas:
+
+```powershell
+python .\seeds\seed_temas.py
 ```
 
 Registro en Eureka:
@@ -124,7 +136,7 @@ Registro en Eureka:
 - Abrir `http://localhost:8761`
 - Verificar que aparezca `TEMAS-SERVICE`
 
-## Headers Comunes
+## ENDPOINTS
 
 ### Endpoints publicos
 
@@ -146,14 +158,6 @@ Si el token falta o es invalido, la respuesta es:
 ```json
 {
   "detail": "Authorization header missing"
-}
-```
-
-o:
-
-```json
-{
-  "detail": "Invalid token"
 }
 ```
 
@@ -509,3 +513,298 @@ Variables clave:
 - `EUREKA_INSTANCE_HOST`
 - `EUREKA_INSTANCE_IP`
 - `REQUEST_TIMEOUT_SECONDS`
+
+## Seeder
+
+El servicio incluye un seeder idempotente en:
+
+- `services/temas-service/seeds/seed_temas.py`
+
+Que inserta o actualiza temas de prueba en MongoDB usando la configuracion de:
+
+- `services/temas-service/.env`
+
+Para ejecutarlo:
+
+```powershell
+cd services/temas-service
+.\.venv\Scripts\python .\seeds\seed_temas.py
+```
+
+Notas:
+
+- No depende de `materias-service`; inserta directamente en MongoDB.
+- Usa `nombre + materia_id` como criterio idempotente.
+- Sirve para probar `GET /api/temas`, `GET /api/temas/{tema_id}` y `PATCH /api/temas/{tema_id}/disable`.
+- Para probar `POST /api/temas` por API, sigues necesitando `materias-service` disponible.
+
+## Datos Poblados Por El Seeder
+
+Al ejecutar el seeder se cargan estos temas:
+
+```json
+[
+  {
+    "nombre": "Matrices",
+    "descripcion": "Operaciones basicas, determinantes e introduccion a transformaciones lineales.",
+    "materia_id": 1
+  },
+  {
+    "nombre": "Limites",
+    "descripcion": "Conceptos iniciales de limites, continuidad y aproximacion de funciones.",
+    "materia_id": 1
+  },
+  {
+    "nombre": "Programacion Orientada a Objetos",
+    "descripcion": "Clases, objetos, encapsulamiento, herencia y polimorfismo.",
+    "materia_id": 2
+  }
+]
+```
+
+## Ejemplos De Uso Con Los Datos Del Seeder
+
+Para estas pruebas en Postman:
+
+- Usa `base_url = http://localhost:8003`
+- Usa un token `admin` para rutas de escritura
+- Usa un token `estudiante` o `admin` para rutas de lectura
+
+### 1. `GET /`
+
+Request:
+
+```http
+GET http://localhost:8003/
+```
+
+Respuesta esperada:
+
+```json
+{
+  "service": "temas-service",
+  "version": "1.0.0",
+  "status": "running"
+}
+```
+
+### 2. `GET /health`
+
+Request:
+
+```http
+GET http://localhost:8003/health
+```
+
+Respuesta esperada:
+
+```json
+{
+  "service": "temas-service",
+  "status": "healthy"
+}
+```
+
+### 3. `GET /api/temas`
+
+Request:
+
+```http
+GET http://localhost:8003/api/temas
+Authorization: Bearer <jwt-estudiante-o-admin>
+```
+
+Respuesta esperada:
+
+```json
+[
+  {
+    "id": "<id-matrices>",
+    "nombre": "Matrices",
+    "descripcion": "Operaciones basicas, determinantes e introduccion a transformaciones lineales.",
+    "materia_id": 1,
+    "esta_activo": true
+  },
+  {
+    "id": "<id-limites>",
+    "nombre": "Limites",
+    "descripcion": "Conceptos iniciales de limites, continuidad y aproximacion de funciones.",
+    "materia_id": 1,
+    "esta_activo": true
+  },
+  {
+    "id": "<id-poo>",
+    "nombre": "Programacion Orientada a Objetos",
+    "descripcion": "Clases, objetos, encapsulamiento, herencia y polimorfismo.",
+    "materia_id": 2,
+    "esta_activo": true
+  }
+]
+```
+
+### 4. `GET /api/temas?materia_id=1`
+
+Request:
+
+```http
+GET http://localhost:8003/api/temas?materia_id=1
+Authorization: Bearer <jwt-estudiante-o-admin>
+```
+
+Respuesta esperada:
+
+- `Matrices`
+- `Limites`
+
+### 5. `GET /api/temas?materia_id=2`
+
+Request:
+
+```http
+GET http://localhost:8003/api/temas?materia_id=2
+Authorization: Bearer <jwt-estudiante-o-admin>
+```
+
+Respuesta esperada:
+
+- `Programacion Orientada a Objetos`
+
+### 6. `GET /api/temas/{tema_id}`
+
+Primero toma un `id` desde `GET /api/temas`.
+
+Ejemplo usando el id de `Matrices`:
+
+```http
+GET http://localhost:8003/api/temas/<id-matrices>
+Authorization: Bearer <jwt-estudiante-o-admin>
+```
+
+Respuesta esperada:
+
+```json
+{
+  "id": "<id-matrices>",
+  "nombre": "Matrices",
+  "descripcion": "Operaciones basicas, determinantes e introduccion a transformaciones lineales.",
+  "materia_id": 1,
+  "esta_activo": true
+}
+```
+
+### 7. `PATCH /api/temas/{tema_id}/disable`
+
+Usa token `admin`.
+
+Ejemplo deshabilitando `Matrices`:
+
+```http
+PATCH http://localhost:8003/api/temas/<id-matrices>/disable
+Authorization: Bearer <jwt-admin>
+```
+
+Respuesta esperada:
+
+```json
+{
+  "id": "<id-matrices>",
+  "nombre": "Matrices",
+  "materia_id": 1,
+  "esta_activo": false
+}
+```
+
+### 8. `GET /api/temas` despues de deshabilitar
+
+Request:
+
+```http
+GET http://localhost:8003/api/temas
+Authorization: Bearer <jwt-estudiante-o-admin>
+```
+
+Comportamiento esperado:
+
+- `Matrices` ya no aparece porque `include_inactive=false` por defecto
+
+### 9. `GET /api/temas?include_inactive=true`
+
+Request:
+
+```http
+GET http://localhost:8003/api/temas?include_inactive=true
+Authorization: Bearer <jwt-estudiante-o-admin>
+```
+
+Comportamiento esperado:
+
+- `Matrices` vuelve a aparecer
+- Debe verse con `esta_activo: false`
+
+### 10. `PUT /api/temas/{tema_id}`
+
+Usa token `admin`.
+
+Nota:
+
+- Este endpoint funciona sin `materias-service` solo si no cambias `materia_id`
+
+Ejemplo actualizando la descripcion de `Limites`:
+
+```http
+PUT http://localhost:8003/api/temas/<id-limites>
+Authorization: Bearer <jwt-admin>
+Content-Type: application/json
+
+{
+  "descripcion": "Limites laterales, continuidad y aproximacion de funciones."
+}
+```
+
+Respuesta esperada:
+
+```json
+{
+  "id": "<id-limites>",
+  "nombre": "Limites",
+  "descripcion": "Limites laterales, continuidad y aproximacion de funciones.",
+  "materia_id": 1,
+  "esta_activo": true
+}
+```
+
+### 11. `POST /api/temas`
+
+Nota importante:
+
+- Este endpoint no se puede probar completamente solo con el seeder
+- Requiere que `materias-service` responda `GET /api/materias/{materia_id}`
+
+Ejemplo cuando `materias-service` este disponible:
+
+```http
+POST http://localhost:8003/api/temas
+Authorization: Bearer <jwt-admin>
+Content-Type: application/json
+
+{
+  "nombre": "Vectores",
+  "descripcion": "Operaciones con vectores y espacios vectoriales.",
+  "materia_id": 1
+}
+```
+
+### 12. `GET /api/temas/{tema_id}/posts`
+
+Nota importante:
+
+- Este endpoint requiere que `posts-service` exponga consulta por `temaId`
+
+Ejemplo:
+
+```http
+GET http://localhost:8003/api/temas/<id-matrices>/posts
+Authorization: Bearer <jwt-estudiante-o-admin>
+```
+
+Si `posts-service` no esta listo, la respuesta esperada es `503`.
