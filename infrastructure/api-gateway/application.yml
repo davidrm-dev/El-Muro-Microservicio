@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: temas-service
+          uri: lb://temas-service
+          predicates:
+            - Path=/api/temas/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
