@@ -1,3 +1,4 @@
+import py_eureka_client.eureka_client as eureka_client
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
@@ -13,10 +14,16 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """Eventos de ciclo de vida de la aplicación"""
     # Startup
+    eureka_client.init(
+        eureka_server=settings.eureka_server,
+        app_name="materias-service",
+        instance_port=settings.service_port
+    )
     Base.metadata.create_all(bind=engine)
     print("✅ Base de datos inicializada")
     yield
     # Shutdown
+    eureka_client.stop()
     print("🛑 Aplicación cerrada")
 
 

@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     service_port: int = 8002
     environment: str = "development"
     
+    # Eureka
+    eureka_server: str = "http://eureka-server:8761/eureka/"
+    
     # JWT (para integración futura)
     jwt_secret: str = "your-secret-key-change-in-production"
     secret_key: Optional[str] = None  # Para compatibilidad

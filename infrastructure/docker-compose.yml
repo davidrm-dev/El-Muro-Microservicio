@@ -1,6 +1,30 @@
 version: '3.8'
-
 services:
+  # ==================== Servidor de Descubrimiento ====================
+  eureka-server:
+    image: steeltoeoss/eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - el-muro-network
+
+  # ==================== API Gateway ====================
+  api-gateway:
+    build:
+      context: ../services/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      EUREKA_SERVER: http://eureka-server:8761/eureka/
+      SERVICE_PORT: 8000
+    networks:
+      - el-muro-network
+    depends_on:
+      - eureka-server
+
   # ==================== Base de Datos - Carreras ====================
   carreras-db:
     image: postgres:15-alpine
@@ -40,9 +64,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    depends_on:
-      carreras-db:
-        condition: service_healthy
 
   # ==================== Microservicio Carreras ====================
   carreras-service:
@@ -54,25 +75,20 @@ services:
       - "8001:8001"
     environment:
       DATABASE_URL: postgresql://usuario:password@carreras-db:5432/carreras_db
+      EUREKA_SERVER: http://eureka-server:8761/eureka/
+      SERVICE_PORT: 8001
+      # Las siguientes son para referencia interna si se necesitan
       POSTGRES_USER: usuario
       POSTGRES_PASSWORD: password
       POSTGRES_DB: carreras_db
       POSTGRES_HOST: carreras-db
-      POSTGRES_PORT: 5432
-      SERVICE_NAME: carreras-service
-      SERVICE_PORT: 8001
-      ENVIRONMENT: development
-      JWT_SECRET: tu-secret-key-super-segura-para-desarrollo-12345
-      MATERIAS_SERVICE_URL: http://materias-service:8002
-    volumes:
-      - ../services/carreras-service:/app
     networks:
       - el-muro-network
     depends_on:
       carreras-db:
         condition: service_healthy
-    command: >
-      sh -c 'uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload'
+      eureka-server:
+        condition: service_started
 
   # ==================== Microservicio Materias ====================
   materias-service:
@@ -84,27 +100,20 @@ services:
       - "8002:8002"
     environment:
       DATABASE_URL: postgresql://usuario:password@materias-db:5432/materias_db
+      EUREKA_SERVER: http://eureka-server:8761/eureka/
+      SERVICE_PORT: 8002
+      # Las siguientes son para referencia interna si se necesitan
       POSTGRES_USER: usuario
       POSTGRES_PASSWORD: password
       POSTGRES_DB: materias_db
       POSTGRES_HOST: materias-db
-      POSTGRES_PORT: 5432
-      SERVICE_NAME: materias-service
-      SERVICE_PORT: 8002
-      ENVIRONMENT: development
-      JWT_SECRET: tu-secret-key-super-segura-para-desarrollo-12345
-      CARRERAS_SERVICE_URL: http://carreras-service:8001
-    volumes:
-      - ../services/materias-service:/app
     networks:
       - el-muro-network
     depends_on:
       materias-db:
         condition: service_healthy
-      carreras-service:
+      eureka-server:
         condition: service_started
-    command: >
-      sh -c 'uvicorn app.main:app --host 0.0.0.0 --port 8002 --reload'
 
   # ==================== Base de Datos - Auth ====================
   auth-db:
