@@ -1,0 +1,14 @@
+services:
+  mongo-temas:
+    image: mongo:7
+    container_name: mongo-temas
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: temas_db
+    volumes:
+      - mongo_temas_data:/data/db
+
+volumes:
+  mongo_temas_data:
