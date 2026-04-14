@@ -31,23 +31,7 @@ def upgrade() -> None:
     op.create_index('idx_materia_nombre', 'materias', ['nombre'])
     op.create_index('idx_materia_carrera_id', 'materias', ['carrera_id'])
     op.create_index('idx_materia_semestre', 'materias', ['semestre'])
-    
-    # Create temas table
-    op.create_table(
-        'temas',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('nombre', sa.String(255), nullable=False),
-        sa.Column('descripcion', sa.Text(), nullable=True),
-        sa.Column('materia_id', sa.Integer(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['materia_id'], ['materias.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-    )
-    op.create_index('idx_tema_nombre', 'temas', ['nombre'])
-    op.create_index('idx_tema_materia', 'temas', ['materia_id'])
 
 
 def downgrade() -> None:
-    op.drop_table('temas')
     op.drop_table('materias')

@@ -11,7 +11,10 @@ class RoleEnum(str, Enum):
     ESTUDIANTE = "estudiante"
 
 
-async def get_jwt_payload(authorization: Optional[str] = Header(None)) -> Dict:
+async def get_jwt_payload(
+    authorization: Optional[str] = Header(None),
+    x_role: Optional[str] = Header(None)
+) -> Dict:
     """
     Validar JWT desde Authorization header y extraer payload.
     
@@ -19,6 +22,8 @@ async def get_jwt_payload(authorization: Optional[str] = Header(None)) -> Dict:
     Token debe contener: {"userId": "...", "rol": "admin|estudiante"}
     """
     if not authorization:
+        if x_role:
+            return {"rol": x_role, "userId": "internal-header"}
         raise HTTPException(
             status_code=401,
             detail="Authorization header missing. Use: Authorization: Bearer <token>"

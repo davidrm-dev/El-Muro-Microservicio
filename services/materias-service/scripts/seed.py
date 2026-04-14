@@ -3,7 +3,7 @@ Script para popular la base de datos con datos iniciales
 """
 from sqlalchemy.orm import Session
 from app.core.database import SessionLocal, engine, Base
-from app.models.materia import Materia, Tema
+from app.models.materia import Materia
 
 
 def seed_database():
@@ -64,43 +64,9 @@ def seed_database():
         
         db.commit()
         
-        # Crear temas para algunas materias
-        temas_data = [
-            {
-                "nombre": "Variables y Tipos de Datos",
-                "descripcion": "Entender variables y tipos de datos",
-                "materia_id": 1
-            },
-            {
-                "nombre": "Funciones",
-                "descripcion": "Definición y uso de funciones",
-                "materia_id": 1
-            },
-            {
-                "nombre": "Lógica Proposicional",
-                "descripcion": "Introducción a la lógica",
-                "materia_id": 2
-            },
-            {
-                "nombre": "Árboles",
-                "descripcion": "Estructura de datos árbol",
-                "materia_id": 3
-            },
-            {
-                "nombre": "Grafos",
-                "descripcion": "Estructura de datos grafo",
-                "materia_id": 3
-            },
-        ]
-        
-        for tema_data in temas_data:
-            tema = Tema(**tema_data)
-            db.add(tema)
-        
         db.commit()
         print("✅ Base de datos poblada exitosamente")
         print(f"   - {len(materias)} materias creadas")
-        print(f"   - {len(temas_data)} temas creados")
         
     except Exception as e:
         db.rollback()

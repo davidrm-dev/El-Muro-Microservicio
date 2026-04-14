@@ -16,7 +16,7 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Create tables
+    # Create carreras table
     op.create_table(
         'carreras',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -29,22 +29,6 @@ def upgrade() -> None:
     )
     op.create_index('idx_carrera_nombre', 'carreras', ['nombre'])
 
-    op.create_table(
-        'materias',
-        sa.Column('id', sa.Integer(), nullable=False),
-        sa.Column('nombre', sa.String(255), nullable=False),
-        sa.Column('semestre', sa.Integer(), nullable=False),
-        sa.Column('carrera_id', sa.Integer(), nullable=False),
-        sa.Column('created_at', sa.DateTime(), nullable=False),
-        sa.Column('updated_at', sa.DateTime(), nullable=False),
-        sa.ForeignKeyConstraint(['carrera_id'], ['carreras.id'], ),
-        sa.PrimaryKeyConstraint('id'),
-    )
-    op.create_index('idx_materia_carrera', 'materias', ['carrera_id'])
-    op.create_index('idx_materia_semestre', 'materias', ['semestre'])
-    op.create_index('idx_materia_nombre', 'materias', ['nombre'])
-
 
 def downgrade() -> None:
-    op.drop_table('materias')
     op.drop_table('carreras')

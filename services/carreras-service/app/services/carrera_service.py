@@ -1,7 +1,8 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from app.models.carrera import Carrera
-from app.schemas.carrera import CarreraCreate, CarreraUpdate
+from app.schemas.carrera import CarreraCreate, CarreraUpdate, MateriaResponse
+from app.core.config import get_settings
 from fastapi import HTTPException
 import httpx
 import logging
@@ -11,13 +12,30 @@ logger = logging.getLogger(__name__)
 
 class MateriasServiceClient:
     """Cliente para comunicarse con el servicio de materias"""
+
+    @staticmethod
+    def _base_url() -> str:
+        settings = get_settings()
+        return settings.materias_service_url.rstrip("/")
+
+    @staticmethod
+    def get_materias_by_carrera(carrera_id: int) -> list[MateriaResponse]:
+        """Obtiene las materias de una carrera desde materias-service"""
+        try:
+            materias_url = f"{MateriasServiceClient._base_url()}/api/materias/carrera/{carrera_id}"
+            with httpx.Client(timeout=5.0) as client:
+                response = client.get(materias_url)
+                response.raise_for_status()
+                return [MateriaResponse.model_validate(item) for item in response.json()]
+        except Exception as e:
+            logger.warning(f"No fue posible consultar materias para carrera {carrera_id}: {str(e)}")
+            return []
     
     @staticmethod
     def delete_materias_by_carrera(carrera_id: int) -> bool:
         """Eliminir todas las materias de una carrera en materias-service"""
         try:
-            # URL del endpoint interno en materias-service
-            materias_url = f"http://materias-service:8002/api/materias/carrera/{carrera_id}/all"
+            materias_url = f"{MateriasServiceClient._base_url()}/api/materias/carrera/{carrera_id}/all"
             
             with httpx.Client(timeout=5.0) as client:
                 response = client.delete(materias_url)
@@ -35,6 +53,13 @@ class MateriasServiceClient:
 
 class CarreraService:
     """Servicio para operaciones de Carrera"""
+
+    @staticmethod
+    def _get_carrera_entity(db: Session, carrera_id: int) -> Carrera:
+        carrera = db.query(Carrera).filter(Carrera.id == carrera_id).first()
+        if not carrera:
+            raise HTTPException(status_code=404, detail="Carrera no encontrada")
+        return carrera
     
     @staticmethod
     def create_carrera(db: Session, carrera_data: CarreraCreate) -> Carrera:
@@ -60,12 +85,19 @@ class CarreraService:
         return db_carrera
     
     @staticmethod
-    def get_carrera_by_id(db: Session, carrera_id: int) -> Carrera:
-        """Obtener una carrera por ID"""
-        carrera = db.query(Carrera).filter(Carrera.id == carrera_id).first()
-        if not carrera:
-            raise HTTPException(status_code=404, detail="Carrera no encontrada")
-        return carrera
+    def get_carrera_by_id(db: Session, carrera_id: int) -> dict:
+        """Obtener una carrera por ID y adjuntar materias desde materias-service"""
+        carrera = CarreraService._get_carrera_entity(db, carrera_id)
+
+        materias = MateriasServiceClient.get_materias_by_carrera(carrera_id)
+        return {
+            "id": carrera.id,
+            "nombre": carrera.nombre,
+            "descripcion": carrera.descripcion,
+            "created_at": carrera.created_at,
+            "updated_at": carrera.updated_at,
+            "materias": materias,
+        }
     
     @staticmethod
     def get_all_carreras(db: Session, skip: int = 0, limit: int = 100) -> list[Carrera]:
@@ -75,7 +107,7 @@ class CarreraService:
     @staticmethod
     def update_carrera(db: Session, carrera_id: int, carrera_data: CarreraUpdate) -> Carrera:
         """Actualizar una carrera"""
-        carrera = CarreraService.get_carrera_by_id(db, carrera_id)
+        carrera = CarreraService._get_carrera_entity(db, carrera_id)
         
         # Verificar si el nuevo nombre ya existe
         if carrera_data.nombre:
@@ -102,14 +134,14 @@ class CarreraService:
     
     @staticmethod
     def delete_carrera(db: Session, carrera_id: int) -> dict:
-        """Eliminar una carrera y todas sus materias (locales y en materias-service)"""
-        carrera = CarreraService.get_carrera_by_id(db, carrera_id)
+        """Eliminar una carrera y solicitar limpieza de sus materias en materias-service"""
+        carrera = CarreraService._get_carrera_entity(db, carrera_id)
         carrera_nombre = carrera.nombre
         
         # Paso 1: Eliminar materias en materias-service (si existe el servicio)
         MateriasServiceClient.delete_materias_by_carrera(carrera_id)
         
-        # Paso 2: Eliminar la carrera localmente (cascada eliminará materias locales)
+        # Paso 2: Eliminar la carrera localmente
         db.delete(carrera)
         db.commit()
         

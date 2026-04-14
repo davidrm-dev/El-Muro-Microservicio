@@ -7,7 +7,6 @@ from sqlalchemy import engine_from_config, pool
 from alembic import context
 from app.core.database import Base
 from app.models.carrera import Carrera
-from app.models.materia import Materia
 
 # this is the Alembic Config object
 config = context.config
