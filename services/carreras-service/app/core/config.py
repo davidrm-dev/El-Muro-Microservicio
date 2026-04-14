@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     """Configuración de la aplicación"""
     
     # Database
-    database_url: str = "postgresql://usuario:password@localhost:5432/carreras_db"
+    database_url: str = "postgresql://usuario:password@127.0.0.1:5434/carreras_db"
     
     # Service
     service_name: str = "carreras-service"
@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     
     # Eureka
-    eureka_server: str = "http://eureka-server:8761/eureka/"
+    eureka_server: str = "http://127.0.0.1:8761/eureka/"
     
     # JWT
     jwt_secret: str = "your-secret-key-change-in-production"
