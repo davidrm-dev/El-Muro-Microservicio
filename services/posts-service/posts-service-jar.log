@@ -60,3 +60,4 @@ This generated password is for development use only. Your security configuration
 2026-04-14T06:27:06.796-05:00  INFO 33800 --- [posts-service] [           main] c.e.u.s.p.PostsServiceApplication        : Started PostsServiceApplication in 39.887 seconds (process running for 45.316)
 2026-04-14T06:32:03.299-05:00  INFO 33800 --- [posts-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
 2026-04-14T06:37:03.311-05:00  INFO 33800 --- [posts-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-04-14T06:42:03.315-05:00  INFO 33800 --- [posts-service] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration

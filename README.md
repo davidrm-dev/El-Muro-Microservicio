@@ -1,69 +1,132 @@
 # El Muro - Arquitectura de Microservicios
 
-Arquitectura distribuida políglota para la gestión académica y social. Los microservicios se ejecutan de forma nativa (Local), mientras que la persistencia se gestiona mediante contenedores Docker.
+Arquitectura distribuida poliglota para gestion academica y social.
 
-## Estructura del Repositorio
+- Infraestructura en contenedores: Eureka + PostgreSQL + MongoDB + Redis.
+- Microservicios de negocio en local (sin contenedores).
+- Comunicacion entre microservicios por descubrimiento en Eureka (service names), no por `localhost` hardcodeado.
+
+## Estructura
 
 ```text
 /el-muro
 ├── /infrastructure
-│   ├── docker-compose.yml         # Orquestación de MongoDB y PostgreSQL
-│   └── /eureka-server             # Registro y Descubrimiento (Spring Cloud) puerto 8761
+│   ├── docker-compose.yml         # Eureka + bases de datos + redis
+│   └── /eureka-server             # Registro y descubrimiento (8761)
 ├── /services
-│   ├── /auth-service              # David: TS + MongoDB (Puerto 3000)
-│   │   └── /src/database/seeds    # Scripts de población de usuarios/roles
-│   ├── /carreras-service          # Karen: Python + PostgreSQL (Puerto 8001)
-│   │   └── /scripts               # Seed de carreras
-│   ├── /materias-service          # Karen: Python + PostgreSQL (Puerto 8002)
-│   │   └── /scripts/seeds         # Scripts SQL/Python para materias
-│   ├── /posts-service             # Angela: Java + MongoDB (Puerto 8002)
-│   │   └── /src/main/resources    # data.json o scripts de inicialización
-│   └── /temas-service             # Anthony: Python + MongoDB (Puerto 8003)
-│       └── /seeds                 # Scripts de carga de temas iniciales
-├── /frontend                      # Aplicación React
+│   ├── /auth-service              # Node.js + MongoDB (3000)
+│   ├── /carreras-service          # FastAPI + PostgreSQL (8001)
+│   ├── /materias-service          # FastAPI + PostgreSQL (8004)
+│   ├── /posts-service             # Spring Boot + MongoDB + Redis (8002)
+│   └── /temas-service             # FastAPI + MongoDB (8003)
+├── start-local.sh                 # Arranque unificado Linux/macOS
+├── start-local.ps1                # Arranque unificado Windows
 └── README.md
 ```
-## Configuración y Ejecución
-1. **Iniciar la Infraestructura**: Navega a la carpeta `infrastructure` y ejecuta:
-   ```bash
-   docker-compose up -d
-   ```
-   Esto levantará MongoDB y PostgreSQL en los puertos configurados.
-2. **Ejecutar los Microservicios**: Cada microservicio se ejecuta de forma nativa. Asegúrate de tener las dependencias instaladas y las variables de entorno configuradas para conectarse a las bases de datos.
-3. **Poblar las Bases de Datos**: Utiliza los scripts de semillas proporcionados en cada microservicio para cargar datos iniciales en MongoDB y PostgreSQL.
-4. **Acceder a la Aplicación**: La aplicación frontend se conecta a los microservicios a través de sus respectivos puertos. Asegúrate de que todos los servicios estén en ejecución para una experiencia completa.
 
-## Variables de Entorno
-Cada microservicio requiere variables de entorno para la configuración de la base de datos y el registro en Eureka. Asegúrate de configurar correctamente estas variables antes de ejecutar los servicios.
+## Puertos
+
+- Eureka: `8761`
+- Auth: `3000`
+- Carreras: `8001`
+- Materias: `8004`
+- Temas: `8003`
+- Posts: `8002`
+- PostgreSQL carreras: `5434`
+- PostgreSQL materias: `5433`
+- MongoDB: `27017`
+- Redis: `6379`
+
+## Ejecucion rapida
+
+### Linux/macOS
+
+```bash
+./start-local.sh
+```
+
+### Windows (PowerShell)
+
+```powershell
+.\start-local.ps1
+```
+
+Los scripts hacen lo siguiente:
+
+1. Levantan infraestructura en `infrastructure/docker-compose.yml`.
+2. Esperan disponibilidad de Eureka.
+3. Ejecutan `auth-service`, `carreras-service`, `materias-service`, `temas-service` y `posts-service` en local.
+4. Corren seeds:
+   - `auth-service`: usuarios base.
+   - `carreras-service`: seed idempotente.
+   - `materias-service`: seed idempotente.
+   - `posts-service`: seed automatico al iniciar si no hay posts.
+5. Verifican health endpoints y registro en Eureka.
+
+## Ejecucion manual (alternativa)
+
+1) Infraestructura:
+
+```bash
+cd infrastructure
+docker-compose up -d --remove-orphans
+```
+
+2) Microservicios locales (en terminales separadas):
+
+```bash
+# auth
+cd services/auth-service
+npm run dev
+
+# carreras
+cd services/carreras-service
+./.venv_local/Scripts/python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8001
+
+# materias
+cd services/materias-service
+./.venv_local/Scripts/python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8004
+
+# temas
+cd services/temas-service
+./.venv_local/Scripts/python.exe -m uvicorn app.main:app --host 0.0.0.0 --port 8003
+
+# posts
+cd services/posts-service
+mvn -DskipTests package
+INTERNAL_SERVICE_SECRET=internal-secret-uptc-2026 \
+INTERNAL_SERVICE_ID=posts-service \
+JWT_SECRET=tu-secret-key-super-segura-para-desarrollo-12345 \
+MONGO_URI="mongodb://admin:password@localhost:27017/posts_service?authSource=admin" \
+REDIS_HOST=localhost REDIS_PORT=6379 \
+EUREKA_DEFAULT_ZONE="http://localhost:8761/eureka/" \
+AUTH_SERVICE_NAME=auth-service TOPIC_SERVICE_NAME=temas-service \
+java -jar target/posts-service-0.0.1-SNAPSHOT.jar
+```
 
 ## Seeders
 
-### Auth Service (MongoDB)
+- Auth users: `services/auth-service/src/database/seeds/seed-users.ts`
+  - Ejecutar: `npm run seed:users`
+- Carreras: `services/carreras-service/scripts/seed.py`
+  - Ejecutar: `PYTHONPATH=. ./.venv_local/Scripts/python.exe scripts/seed.py`
+- Materias: `services/materias-service/scripts/seed.py`
+  - Ejecutar: `PYTHONPATH=. ./.venv_local/Scripts/python.exe scripts/seed.py`
+- Posts: automatico al iniciar (`SeedPostsConfig`) si la coleccion esta vacia.
 
-El microservicio `auth-service` incluye un seeder de usuarios base en:
-
-- `services/auth-service/src/database/seeds/seed-users.ts`
-
-Usuarios creados/actualizados por defecto:
-
-- `admin.principal@uptc.edu.co` (rol `admin`, activo, verificado)
-- `estudiante.uno@uptc.edu.co` (rol `estudiante`, puntos iniciales 120)
-- `estudiante.dos@uptc.edu.co` (rol `estudiante`, puntos iniciales 40, deshabilitado)
-
-### Cómo correr el seeder
-
-1. Asegúrate de tener MongoDB corriendo y `MONGO_URI` configurada.
-2. Instala dependencias del servicio:
+## Verificacion rapida
 
 ```bash
-cd services/auth-service
-npm install
+curl -s http://localhost:3000/health
+curl -s http://localhost:8001/health
+curl -s http://localhost:8004/health
+curl -s http://localhost:8003/health
+curl -s http://localhost:8002/health
+curl -s http://localhost:8761/eureka/apps
 ```
 
-3. Ejecuta el seeder:
+## Nota de comunicacion entre servicios
 
-```bash
-npm run seed:users
-```
-
-El script es idempotente (si el usuario existe por correo, lo actualiza; si no existe, lo crea).
+- Los servicios se registran en Eureka con `service_name`.
+- Las llamadas internas resuelven destino via Eureka por nombre (`AUTH-SERVICE`, `POSTS-SERVICE`, etc.).
+- No se usa `localhost` para la comunicacion logica entre microservicios.
