@@ -6,19 +6,29 @@ import requests
 from fastapi import HTTPException
 
 from app.core.config import get_settings
+from app.core.service_discovery import ServiceDiscoveryError, discover_service_url
 
 
 class MateriasClient:
     def __init__(self, base_url: str | None = None, timeout: float | None = None) -> None:
         settings = get_settings()
-        self.base_url = (base_url or settings.materias_service_url).rstrip("/")
+        self.service_name = settings.materias_service_name
+        self.base_url = base_url.rstrip("/") if base_url else None
         self.timeout = timeout or settings.request_timeout_seconds
+
+    def _base_url(self) -> str:
+        if self.base_url:
+            return self.base_url
+        try:
+            return discover_service_url(self.service_name, timeout=self.timeout)
+        except (requests.RequestException, ServiceDiscoveryError) as exc:
+            raise HTTPException(status_code=503, detail="Could not resolve materias-service via Eureka") from exc
 
     def ensure_materia_exists(self, materia_id: int, authorization: str | None) -> None:
         headers = {"Authorization": authorization} if authorization else {}
         try:
             response = requests.get(
-                f"{self.base_url}/api/materias/{materia_id}",
+                f"{self._base_url()}/api/materias/{materia_id}",
                 headers=headers,
                 timeout=self.timeout,
             )
@@ -34,14 +44,23 @@ class MateriasClient:
 class PostsClient:
     def __init__(self, base_url: str | None = None, timeout: float | None = None) -> None:
         settings = get_settings()
-        self.base_url = (base_url or settings.posts_service_url).rstrip("/")
+        self.service_name = settings.posts_service_name
+        self.base_url = base_url.rstrip("/") if base_url else None
         self.timeout = timeout or settings.request_timeout_seconds
+
+    def _base_url(self) -> str:
+        if self.base_url:
+            return self.base_url
+        try:
+            return discover_service_url(self.service_name, timeout=self.timeout)
+        except (requests.RequestException, ServiceDiscoveryError) as exc:
+            raise HTTPException(status_code=503, detail="Could not resolve posts-service via Eureka") from exc
 
     def get_posts_by_tema(self, tema_id: str, authorization: str | None) -> list[dict[str, Any]]:
         headers = {"Authorization": authorization} if authorization else {}
         candidate_paths = [
-            f"{self.base_url}/api/posts",
-            f"{self.base_url}/posts",
+            f"{self._base_url()}/api/posts",
+            f"{self._base_url()}/posts",
         ]
         params = {"temaId": tema_id}
 

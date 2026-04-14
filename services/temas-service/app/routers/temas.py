@@ -59,6 +59,15 @@ def get_tema(
     return service.get_tema(tema_id)
 
 
+@router.get("/internal/{tema_id}/exists")
+def internal_exists_tema(
+    tema_id: str,
+    service: TemaService = Depends(get_tema_service),
+):
+    service.get_tema(tema_id)
+    return {"exists": True}
+
+
 @router.put("/{tema_id}", response_model=TemaResponse)
 def update_tema(
     tema_id: str,

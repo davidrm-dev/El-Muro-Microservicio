@@ -1,0 +1,54 @@
+INFO:     Started server process [19036]
+INFO:     Waiting for application startup.
+2026-04-14 06:26:42,896 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-04-14 06:26:42,896 INFO sqlalchemy.engine.Engine [raw sql] {}
+2026-04-14 06:26:43,000 INFO sqlalchemy.engine.Engine select current_schema()
+2026-04-14 06:26:43,000 INFO sqlalchemy.engine.Engine [raw sql] {}
+2026-04-14 06:26:43,088 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-04-14 06:26:43,090 INFO sqlalchemy.engine.Engine [raw sql] {}
+2026-04-14 06:26:43,100 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-04-14 06:26:43,113 INFO sqlalchemy.engine.Engine SELECT pg_catalog.pg_class.relname 
+FROM pg_catalog.pg_class JOIN pg_catalog.pg_namespace ON pg_catalog.pg_namespace.oid = pg_catalog.pg_class.relnamespace 
+WHERE pg_catalog.pg_class.relname = %(table_name)s AND pg_catalog.pg_class.relkind = ANY (ARRAY[%(param_1)s, %(param_2)s, %(param_3)s, %(param_4)s, %(param_5)s]) AND pg_catalog.pg_table_is_visible(pg_catalog.pg_class.oid) AND pg_catalog.pg_namespace.nspname != %(nspname_1)s
+2026-04-14 06:26:43,114 INFO sqlalchemy.engine.Engine [generated in 0.00110s] {'table_name': 'materias', 'param_1': 'r', 'param_2': 'p', 'param_3': 'f', 'param_4': 'v', 'param_5': 'm', 'nspname_1': 'pg_catalog'}
+2026-04-14 06:26:43,244 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8004 (Press CTRL+C to quit)
+Base de datos inicializada
+INFO:     127.0.0.1:59735 - "GET /health HTTP/1.1" 200 OK
+2026-04-14 06:29:45,413 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-04-14 06:29:45,417 INFO sqlalchemy.engine.Engine SELECT materias.id AS materias_id, materias.nombre AS materias_nombre, materias.descripcion AS materias_descripcion, materias.semestre AS materias_semestre, materias.carrera_id AS materias_carrera_id, materias.created_at AS materias_created_at, materias.updated_at AS materias_updated_at 
+FROM materias 
+ LIMIT %(param_1)s OFFSET %(param_2)s
+2026-04-14 06:29:45,417 INFO sqlalchemy.engine.Engine [generated in 0.00050s] {'param_1': 100, 'param_2': 0}
+INFO:     127.0.0.1:51466 - "GET /api/materias/ HTTP/1.1" 200 OK
+2026-04-14 06:29:45,436 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-04-14 06:29:47,502 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-04-14 06:29:47,504 INFO sqlalchemy.engine.Engine SELECT materias.id AS materias_id, materias.nombre AS materias_nombre, materias.descripcion AS materias_descripcion, materias.semestre AS materias_semestre, materias.carrera_id AS materias_carrera_id, materias.created_at AS materias_created_at, materias.updated_at AS materias_updated_at 
+FROM materias 
+WHERE materias.id = %(id_1)s 
+ LIMIT %(param_1)s
+2026-04-14 06:29:47,504 INFO sqlalchemy.engine.Engine [generated in 0.00039s] {'id_1': 1, 'param_1': 1}
+INFO:     172.30.128.1:51471 - "GET /api/materias/1 HTTP/1.1" 200 OK
+2026-04-14 06:29:47,511 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     172.30.128.1:51742 - "GET /api/materias/carrera/1 HTTP/1.1" 401 Unauthorized
+INFO:     172.30.128.1:51749 - "GET /api/materias/carrera/1 HTTP/1.1" 401 Unauthorized
+2026-04-14 06:30:55,089 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-04-14 06:30:55,091 INFO sqlalchemy.engine.Engine INSERT INTO materias (nombre, descripcion, semestre, carrera_id, created_at, updated_at) VALUES (%(nombre)s, %(descripcion)s, %(semestre)s, %(carrera_id)s, %(created_at)s, %(updated_at)s) RETURNING materias.id
+2026-04-14 06:30:55,091 INFO sqlalchemy.engine.Engine [generated in 0.00040s] {'nombre': 'Comunicacion Distribuida', 'descripcion': 'Materia para prueba de eureka', 'semestre': 6, 'carrera_id': 1, 'created_at': datetime.datetime(2026, 4, 14, 11, 30, 55, 91670), 'updated_at': datetime.datetime(2026, 4, 14, 11, 30, 55, 91670)}
+2026-04-14 06:30:55,121 INFO sqlalchemy.engine.Engine COMMIT
+2026-04-14 06:30:55,130 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-04-14 06:30:55,132 INFO sqlalchemy.engine.Engine SELECT materias.id, materias.nombre, materias.descripcion, materias.semestre, materias.carrera_id, materias.created_at, materias.updated_at 
+FROM materias 
+WHERE materias.id = %(pk_1)s
+2026-04-14 06:30:55,132 INFO sqlalchemy.engine.Engine [generated in 0.00049s] {'pk_1': 2}
+INFO:     127.0.0.1:51745 - "POST /api/materias/crear HTTP/1.1" 201 Created
+2026-04-14 06:30:55,137 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-04-14 06:30:57,187 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-04-14 06:30:57,189 INFO sqlalchemy.engine.Engine SELECT materias.id AS materias_id, materias.nombre AS materias_nombre, materias.descripcion AS materias_descripcion, materias.semestre AS materias_semestre, materias.carrera_id AS materias_carrera_id, materias.created_at AS materias_created_at, materias.updated_at AS materias_updated_at 
+FROM materias 
+WHERE materias.carrera_id = %(carrera_id_1)s 
+ LIMIT %(param_1)s OFFSET %(param_2)s
+2026-04-14 06:30:57,189 INFO sqlalchemy.engine.Engine [generated in 0.00038s] {'carrera_id_1': 1, 'param_1': 100, 'param_2': 0}
+INFO:     127.0.0.1:51752 - "GET /api/materias/carrera/1 HTTP/1.1" 200 OK
+2026-04-14 06:30:57,194 INFO sqlalchemy.engine.Engine ROLLBACK

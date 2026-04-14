@@ -3,6 +3,7 @@ from sqlalchemy import func
 from app.models.materia import Materia
 from app.schemas.materia import MateriaCreate, MateriaUpdate
 from app.core.config import get_settings
+from app.core.service_discovery import discover_service_url
 from fastapi import HTTPException
 import httpx
 import logging
@@ -14,12 +15,15 @@ class CarrerasServiceClient:
     """Cliente para consultar el servicio de carreras"""
     
     @staticmethod
+    def _base_url() -> str:
+        settings = get_settings()
+        return discover_service_url(settings.carreras_service_name, settings.eureka_server).rstrip("/")
+
+    @staticmethod
     def carrera_exists(carrera_id: int) -> bool:
         """Verificar si una carrera existe en el servicio de carreras"""
         try:
-            settings = get_settings()
-            # Usar el endpoint público de validación sin autenticación
-            carreras_url = f"{settings.carreras_service_url}/api/carreras/_exists/{carrera_id}"
+            carreras_url = f"{CarrerasServiceClient._base_url()}/api/carreras/_exists/{carrera_id}"
             
             with httpx.Client(timeout=5.0) as client:
                 response = client.get(carreras_url)

@@ -18,10 +18,19 @@ public class Post {
     private Integer accessPoints;
     private Boolean blocked;
     private LocalDateTime createdAt;
-    private Integer authorId;
-    private Integer topicId;
-    private java.util.Set<Integer> unlockedByUsers = new java.util.HashSet<>();
-    private java.util.Set<Integer> votedByUsers = new java.util.HashSet<>();
+    private String authorId;
+    private String topicId;
+    private java.util.Set<String> unlockedByUsers = new java.util.HashSet<>();
+    private java.util.Set<String> votedByUsers = new java.util.HashSet<>();
+    private Integer rewardedVotes = 0;
+
+    public Integer getRewardedVotes() {
+        return rewardedVotes;
+    }
+
+    public void setRewardedVotes(Integer rewardedVotes) {
+        this.rewardedVotes = rewardedVotes;
+    }
 
     public Integer getId() {
         return id;
@@ -95,35 +104,35 @@ public class Post {
         this.createdAt = createdAt;
     }
 
-    public Integer getAuthorId() {
+    public String getAuthorId() {
         return authorId;
     }
 
-    public void setAuthorId(Integer authorId) {
+    public void setAuthorId(String authorId) {
         this.authorId = authorId;
     }
 
-    public Integer getTopicId() {
+    public String getTopicId() {
         return topicId;
     }
 
-    public void setTopicId(Integer topicId) {
+    public void setTopicId(String topicId) {
         this.topicId = topicId;
     }
 
-    public java.util.Set<Integer> getUnlockedByUsers() {
+    public java.util.Set<String> getUnlockedByUsers() {
         return unlockedByUsers;
     }
 
-    public void setUnlockedByUsers(java.util.Set<Integer> unlockedByUsers) {
+    public void setUnlockedByUsers(java.util.Set<String> unlockedByUsers) {
         this.unlockedByUsers = unlockedByUsers;
     }
 
-    public java.util.Set<Integer> getVotedByUsers() {
+    public java.util.Set<String> getVotedByUsers() {
         return votedByUsers;
     }
 
-    public void setVotedByUsers(java.util.Set<Integer> votedByUsers) {
+    public void setVotedByUsers(java.util.Set<String> votedByUsers) {
         this.votedByUsers = votedByUsers;
     }
 }

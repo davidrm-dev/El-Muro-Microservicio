@@ -1,0 +1,12 @@
+INFO:     Started server process [33560]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8003 (Press CTRL+C to quit)
+INFO:     127.0.0.1:59733 - "GET /health HTTP/1.1" 200 OK
+INFO:app.core.security:Attempting JWT decode with secret_key: tu-secret-... (len=48)
+INFO:     127.0.0.1:51469 - "POST /api/temas HTTP/1.1" 201 Created
+INFO:     127.0.0.1:51475 - "GET /api/temas/internal/69de252b8b6e118a1db8dfc4/exists HTTP/1.1" 200 OK
+INFO:app.core.security:Attempting JWT decode with secret_key: tu-secret-... (len=48)
+INFO:     127.0.0.1:51481 - "GET /api/temas/69de252b8b6e118a1db8dfc4/posts HTTP/1.1" 200 OK
+INFO:app.core.security:Attempting JWT decode with secret_key: tu-secret-... (len=48)
+INFO:     127.0.0.1:51755 - "GET /api/temas?materia_id=1 HTTP/1.1" 200 OK

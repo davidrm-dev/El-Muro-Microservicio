@@ -10,7 +10,7 @@ public record PostResponse(
     Integer accessPoints,
     Boolean blocked,
     String createdAt,
-    Integer authorId,
-    Integer topicId
+    String authorId,
+    String topicId
 ) {
 }

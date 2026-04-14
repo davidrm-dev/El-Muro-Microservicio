@@ -2,7 +2,7 @@ spring:
   application:
     name: posts-service
   mongodb:
-    uri: ${MONGO_URI:mongodb://localhost:27017/posts_service}
+    uri: ${MONGO_URI:mongodb://admin:password@localhost:27017/posts_service?authSource=admin}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -19,23 +19,23 @@ server:
 
 security:
   jwt:
-    secret: ${JWT_SECRET:change-this-jwt-secret-change-this-jwt-secret}
+    secret: ${JWT_SECRET:tu-secret-key-super-segura-para-desarrollo-12345}
 
 integration:
   internal:
     service-id: ${INTERNAL_SERVICE_ID:posts-service}
     secret: ${INTERNAL_SERVICE_SECRET:change-this-internal-secret}
   auth-service:
-    base-url: ${AUTH_SERVICE_BASE_URL:http://localhost:3000}
-    points-api-path: ${AUTH_SERVICE_POINTS_API_PATH:/api/auth/internal/users/points}
-    points-sign-path: ${AUTH_SERVICE_POINTS_SIGN_PATH:/internal/users/points}
+    service-name: ${AUTH_SERVICE_NAME:auth-service}
+    points-api-path: ${AUTH_SERVICE_POINTS_API_PATH:/api/auth/internal/users/{userId}/points}
+    points-sign-path: ${AUTH_SERVICE_POINTS_SIGN_PATH:/internal/users/{userId}/points}
     deduct-points-api-path: ${AUTH_SERVICE_DEDUCT_POINTS_API_PATH:/api/auth/internal/users/{userId}/deduct-points}
     deduct-points-sign-path: ${AUTH_SERVICE_DEDUCT_POINTS_SIGN_PATH:/internal/users/{userId}/deduct-points}
     add-points-api-path: ${AUTH_SERVICE_ADD_POINTS_API_PATH:/api/auth/internal/users/{userId}/add-points}
     add-points-sign-path: ${AUTH_SERVICE_ADD_POINTS_SIGN_PATH:/internal/users/{userId}/add-points}
   topic-service:
-    base-url: ${TOPIC_SERVICE_BASE_URL:http://localhost:8003}
-    exists-path: ${TOPIC_SERVICE_EXISTS_PATH:/api/topics/{topicId}}
+    service-name: ${TOPIC_SERVICE_NAME:temas-service}
+    exists-path: ${TOPIC_SERVICE_EXISTS_PATH:/api/temas/internal/{topicId}/exists}
 
 eureka:
   client:

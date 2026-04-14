@@ -1,0 +1,8 @@
+
+> auth-service@1.0.0 dev
+> ts-node --files src/server.ts
+
+◇ injecting env (21) from .env // tip: ◈ secrets for agents [www.dotenvx.com]
+Servidor corriendo en http://localhost:3000
+registered with eureka:  auth-service/localhost
+auth-service registrado en Eureka (localhost:8761)

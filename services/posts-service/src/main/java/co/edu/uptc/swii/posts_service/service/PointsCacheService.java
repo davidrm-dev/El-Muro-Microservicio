@@ -16,11 +16,11 @@ public class PointsCacheService {
     }
 
     @Cacheable(cacheNames = CacheNames.USER_POINTS, key = "#userId")
-    public int getUserPoints(Integer userId) {
+    public int getUserPoints(String userId) {
         return authClient.getUserPoints(userId);
     }
 
     @CacheEvict(cacheNames = CacheNames.USER_POINTS, key = "#userId")
-    public void evictUserPoints(Integer userId) {
+    public void evictUserPoints(String userId) {
     }
 }

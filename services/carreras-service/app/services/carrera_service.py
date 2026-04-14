@@ -3,6 +3,7 @@ from sqlalchemy import func
 from app.models.carrera import Carrera
 from app.schemas.carrera import CarreraCreate, CarreraUpdate, MateriaResponse
 from app.core.config import get_settings
+from app.core.service_discovery import discover_service_url
 from fastapi import HTTPException
 import httpx
 import logging
@@ -16,7 +17,7 @@ class MateriasServiceClient:
     @staticmethod
     def _base_url() -> str:
         settings = get_settings()
-        return settings.materias_service_url.rstrip("/")
+        return discover_service_url(settings.materias_service_name, settings.eureka_server).rstrip("/")
 
     @staticmethod
     def get_materias_by_carrera(carrera_id: int) -> list[MateriaResponse]:

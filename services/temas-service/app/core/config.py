@@ -22,10 +22,10 @@ class Settings(BaseSettings):
 
     allowed_origins: list[str] = Field(default_factory=lambda: ["*"])
 
-    materias_service_url: str = "http://localhost:8001"
-    posts_service_url: str = "http://localhost:8002"
+    materias_service_name: str = "materias-service"
+    posts_service_name: str = "posts-service"
 
-    eureka_enabled: bool = False
+    eureka_enabled: bool = True
     eureka_server_url: str = "http://localhost:8761/eureka/"
     eureka_instance_host: str = "localhost"
     eureka_instance_ip: str = "127.0.0.1"

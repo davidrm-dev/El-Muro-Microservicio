@@ -2,6 +2,7 @@ package co.edu.uptc.swii.posts_service.service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.cache.annotation.CacheEvict;
@@ -41,13 +42,12 @@ public class PostService {
     }
 
     @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
-    public PostResponse createPost(CreatePostRequest request, Integer authenticatedUserId) {
-        if (authenticatedUserId == null) {
+    public PostResponse createPost(CreatePostRequest request, String authenticatedUserId) {
+        if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
         }
 
         boolean topicExists = topicClient.existsById(request.topicId());
-        //boolean topicExists = true; // TODO: Descomentar esta línea y eliminar la siguiente cuando el TopicClient esté implementado
         if (!topicExists) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Topic does not exist");
         }
@@ -79,8 +79,8 @@ public class PostService {
         return mapToResponse(saved);
     }
 
-    public PostResponse accessPost(Integer postId, Integer authenticatedUserId) {
-        if (authenticatedUserId == null) {
+    public PostResponse accessPost(Integer postId, String authenticatedUserId) {
+        if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
         }
 
@@ -90,17 +90,18 @@ public class PostService {
         if (Boolean.TRUE.equals(post.getBlocked()) && !post.getAuthorId().equals(authenticatedUserId)) {
             if (post.getUnlockedByUsers() == null || !post.getUnlockedByUsers().contains(authenticatedUserId)) {
                 int points = pointsCacheService.getUserPoints(authenticatedUserId);
-                if (points < post.getAccessPoints()) {
-                    throw new ApiException(HttpStatus.FORBIDDEN, "Insufficient points to access this post");
+                if (post.getAccessPoints() > points) {
+                    throw new ApiException(HttpStatus.FORBIDDEN, "Insufficient points to unlock this post");
                 }
-                
-                authClient.deductPoints(authenticatedUserId, post.getAccessPoints(), "access-post");
+
+                authClient.deductPoints(authenticatedUserId, post.getAccessPoints(), "post-unlock");
                 pointsCacheService.evictUserPoints(authenticatedUserId);
 
                 if (post.getUnlockedByUsers() == null) {
-                    post.setUnlockedByUsers(new java.util.HashSet<>());
+                    post.setUnlockedByUsers(new HashSet<>());
                 }
                 post.getUnlockedByUsers().add(authenticatedUserId);
+                post.setBlocked(false);
                 postRepository.save(post);
             }
         }
@@ -108,9 +109,30 @@ public class PostService {
         return mapToResponse(post);
     }
 
+    public PostResponse viewPost(Integer postId, String authenticatedUserId) {
+        if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
+
+        Post post = postRepository.findById(postId)
+            .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Post not found"));
+
+        if (!post.getAuthorId().equals(authenticatedUserId)) {
+            int currentPoints = pointsCacheService.getUserPoints(authenticatedUserId);
+            if (currentPoints < 3) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "Insufficient points to view post (need 3 points)");
+            }
+
+            authClient.addPoints(authenticatedUserId, 3, "post-view");
+            pointsCacheService.evictUserPoints(authenticatedUserId);
+        }
+
+        return mapToResponse(post);
+    }
+
     @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
-    public PostResponse updatePost(Integer postId, UpdatePostRequest request, Integer authenticatedUserId) {
-        if (authenticatedUserId == null) {
+    public PostResponse updatePost(Integer postId, UpdatePostRequest request, String authenticatedUserId) {
+        if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
         }
 
@@ -144,8 +166,8 @@ public class PostService {
     }
 
     @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
-    public void deletePost(Integer postId, Integer authenticatedUserId, String role) {
-        if (authenticatedUserId == null) {
+    public void deletePost(Integer postId, String authenticatedUserId, String role) {
+        if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
         }
 
@@ -162,8 +184,8 @@ public class PostService {
     }
 
     @CacheEvict(cacheNames = CacheNames.FEED_LATEST, allEntries = true)
-    public PostResponse votePost(Integer postId, Integer authenticatedUserId) {
-        if (authenticatedUserId == null) {
+    public PostResponse votePost(Integer postId, String authenticatedUserId) {
+        if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
             throw new ApiException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
         }
 
@@ -178,22 +200,35 @@ public class PostService {
         }
 
         if (post.getVotedByUsers() == null) {
-            post.setVotedByUsers(new java.util.HashSet<>());
+            post.setVotedByUsers(new HashSet<>());
         }
         post.getVotedByUsers().add(authenticatedUserId);
         post.setVotes(post.getVotes() + 1);
+
+        int newVotes = post.getVotes();
+        int rewardedVotes = post.getRewardedVotes() != null ? post.getRewardedVotes() : 0;
+        int votesNeededForReward = (rewardedVotes + 1) * 3;
+
+        if (newVotes >= votesNeededForReward) {
+            authClient.addPoints(post.getAuthorId(), 1, "post-3-votes");
+            pointsCacheService.evictUserPoints(post.getAuthorId());
+            post.setRewardedVotes(rewardedVotes + 1);
+        }
+
         Post saved = postRepository.save(post);
-
-        // Sumar un punto al creador del post
-        authClient.addPoints(post.getAuthorId(), 1, "post-voted");
-        pointsCacheService.evictUserPoints(post.getAuthorId());
-
         return mapToResponse(saved);
     }
 
     @Cacheable(cacheNames = CacheNames.FEED_LATEST, key = "#limit")
     public List<PostResponse> getLatestFeed(Integer limit) {
         return postRepository.findAllByOrderByCreatedAtDesc(PageRequest.of(0, limit))
+            .stream()
+            .map(this::mapToResponse)
+            .toList();
+    }
+
+    public List<PostResponse> getPostsByTopicId(String topicId) {
+        return postRepository.findByTopicIdOrderByCreatedAtDesc(topicId)
             .stream()
             .map(this::mapToResponse)
             .toList();

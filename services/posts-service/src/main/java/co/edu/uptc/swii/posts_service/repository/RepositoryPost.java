@@ -15,4 +15,6 @@ public interface RepositoryPost extends MongoRepository<Post, Integer> {
 
     List<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
+    List<Post> findByTopicIdOrderByCreatedAtDesc(String topicId);
+
 }

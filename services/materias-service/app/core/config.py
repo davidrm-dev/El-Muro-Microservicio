@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     allowed_origins: str = "*"
     
     # Otros servicios
-    carreras_service_url: str = "http://carreras-service:8001"
+    carreras_service_name: str = "carreras-service"
     usuarios_service_url: str = "http://usuarios-service:8003"
     
     def __init__(self, **data):

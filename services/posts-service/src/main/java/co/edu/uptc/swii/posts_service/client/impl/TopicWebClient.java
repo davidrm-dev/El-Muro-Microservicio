@@ -1,6 +1,7 @@
 package co.edu.uptc.swii.posts_service.client.impl;
 
 import co.edu.uptc.swii.posts_service.client.TopicClient;
+import co.edu.uptc.swii.posts_service.client.ServiceDiscoveryClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -11,22 +12,27 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 public class TopicWebClient implements TopicClient {
 
     private final WebClient webClient;
+    private final ServiceDiscoveryClient serviceDiscoveryClient;
 
-    public TopicWebClient(WebClient webClient) {
+    public TopicWebClient(WebClient webClient, ServiceDiscoveryClient serviceDiscoveryClient) {
         this.webClient = webClient;
+        this.serviceDiscoveryClient = serviceDiscoveryClient;
     }
 
-    @Value("${integration.topic-service.base-url}")
-    private String topicBaseUrl;
+    @Value("${integration.topic-service.service-name}")
+    private String topicServiceName;
 
     @Value("${integration.topic-service.exists-path}")
     private String topicExistsPath;
 
     @Override
-    public boolean existsById(Integer topicId) {
+    public boolean existsById(String topicId) {
         try {
+            String topicBaseUrl = serviceDiscoveryClient.resolveBaseUrl(topicServiceName);
+            String completeUrl = topicBaseUrl + topicExistsPath.replace("{topicId}", topicId);
+            
             webClient.get()
-                .uri(topicBaseUrl + topicExistsPath, topicId)
+                .uri(completeUrl)
                 .retrieve()
                 .toBodilessEntity()
                 .block();

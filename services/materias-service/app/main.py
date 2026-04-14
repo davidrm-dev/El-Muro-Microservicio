@@ -20,11 +20,11 @@ async def lifespan(app: FastAPI):
         instance_port=settings.service_port
     )
     Base.metadata.create_all(bind=engine)
-    print("✅ Base de datos inicializada")
+    print("Base de datos inicializada")
     yield
     # Shutdown
     eureka_client.stop()
-    print("🛑 Aplicación cerrada")
+    print("Aplicacion cerrada")
 
 
 # Crear aplicación FastAPI

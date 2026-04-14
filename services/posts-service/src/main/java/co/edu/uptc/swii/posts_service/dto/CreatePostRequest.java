@@ -10,6 +10,6 @@ public record CreatePostRequest(
     String fileUrl,
     String textContent,
     @NotNull @Min(0) Integer accessPoints,
-    @NotNull Integer topicId
+    @NotNull String topicId
 ) {
 }

@@ -51,8 +51,8 @@ public class PostServiceTest {
 
     private Post mockPost;
     private final Integer POST_ID = 1;
-    private final Integer AUTHOR_ID = 100;
-    private final Integer OTHER_USER_ID = 101;
+    private final String AUTHOR_ID = "100";
+    private final String OTHER_USER_ID = "101";
 
     @BeforeEach
     void setUp() {
@@ -66,14 +66,14 @@ public class PostServiceTest {
         mockPost.setBlocked(true);
         mockPost.setCreatedAt(LocalDateTime.now().minusMinutes(5));
         mockPost.setAuthorId(AUTHOR_ID);
-        mockPost.setTopicId(1);
+        mockPost.setTopicId("69ddcd39af373c03557ec194");
     }
 
     @Test
     void testCreatePost_Success() {
-        CreatePostRequest request = new CreatePostRequest("Title", "Desc", null, "Content", 10, 1);
+        CreatePostRequest request = new CreatePostRequest("Title", "Desc", null, "Content", 10, "69ddcd39af373c03557ec194");
         
-        when(topicClient.existsById(1)).thenReturn(true);
+        when(topicClient.existsById("69ddcd39af373c03557ec194")).thenReturn(true);
         when(pointsCacheService.getUserPoints(AUTHOR_ID)).thenReturn(20);
         when(postRepository.findTopByOrderByIdDesc()).thenReturn(Optional.empty());
         when(postRepository.save(any(Post.class))).thenAnswer(i -> {
@@ -97,7 +97,7 @@ public class PostServiceTest {
         PostResponse response = postService.accessPost(POST_ID, AUTHOR_ID);
         
         assertNotNull(response);
-        verify(authClient, never()).deductPoints(anyInt(), anyInt(), anyString());
+        verify(authClient, never()).deductPoints(anyString(), anyInt(), anyString());
     }
 
     @Test
@@ -137,21 +137,22 @@ public class PostServiceTest {
         
         assertNotNull(response);
         // Debe poder acceder sin gastar puntos otra vez
-        verify(authClient, never()).deductPoints(anyInt(), anyInt(), anyString());
+        verify(authClient, never()).deductPoints(anyString(), anyInt(), anyString());
         verify(postRepository, never()).save(any(Post.class));
     }
 
     @Test
     void testVotePost_Success() {
+        mockPost.setVotes(2);
         when(postRepository.findById(POST_ID)).thenReturn(Optional.of(mockPost));
         when(postRepository.save(any(Post.class))).thenReturn(mockPost);
         
         PostResponse response = postService.votePost(POST_ID, OTHER_USER_ID);
         
         assertNotNull(response);
-        assertEquals(1, mockPost.getVotes());
+        assertEquals(3, mockPost.getVotes());
         assertTrue(mockPost.getVotedByUsers().contains(OTHER_USER_ID));
-        verify(authClient).addPoints(eq(AUTHOR_ID), eq(1), eq("post-voted"));
+        verify(authClient).addPoints(eq(AUTHOR_ID), eq(1), eq("post-3-votes"));
     }
 
     @Test

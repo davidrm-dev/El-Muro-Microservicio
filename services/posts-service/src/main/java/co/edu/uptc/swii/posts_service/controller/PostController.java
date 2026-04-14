@@ -62,6 +62,20 @@ public class PostController {
         return postService.accessPost(postId, user.userId());
     }
 
+    @PostMapping("/{postId}/view")
+    public PostResponse viewPost(
+        @PathVariable Integer postId,
+        @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        if (user == null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
+        if (!"estudiante".equalsIgnoreCase(user.role()) && !"student".equalsIgnoreCase(user.role())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Only students can view posts");
+        }
+        return postService.viewPost(postId, user.userId());
+    }
+
     @GetMapping("/feed/latest")
     public List<PostResponse> latestFeed(
         @RequestParam(defaultValue = "20") Integer limit,
@@ -77,6 +91,23 @@ public class PostController {
             throw new ApiException(HttpStatus.BAD_REQUEST, "limit must be between 1 and 100");
         }
         return postService.getLatestFeed(limit);
+    }
+
+    @GetMapping
+    public List<PostResponse> getPostsByTopic(
+        @RequestParam(name = "temaId") String temaId,
+        @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        if (user == null) {
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "User is not authenticated");
+        }
+        if (!"estudiante".equalsIgnoreCase(user.role()) && !"student".equalsIgnoreCase(user.role()) && !"admin".equalsIgnoreCase(user.role())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "Only admin or student can access posts");
+        }
+        if (temaId == null || temaId.isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "temaId is required");
+        }
+        return postService.getPostsByTopicId(temaId);
     }
 
     @PutMapping("/{postId}")
