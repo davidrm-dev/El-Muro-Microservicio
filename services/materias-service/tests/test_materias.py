@@ -8,6 +8,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.main import app
 from app.core.database import Base, get_db
+from app.services.materia_service import CarrerasServiceClient
 
 
 # Configurar base de datos de prueba
@@ -39,6 +40,12 @@ def reset_db():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def mock_carrera_exists(monkeypatch):
+    """Evitar dependencia de carreras-service durante pruebas unitarias"""
+    monkeypatch.setattr(CarrerasServiceClient, "carrera_exists", staticmethod(lambda _carrera_id: True))
 
 
 class TestMaterias:
@@ -131,34 +138,5 @@ class TestMaterias:
         assert response.status_code == 200
         assert response.json()["nombre"] == "Test Actualizado"
     
-    def test_crear_tema(self):
-        """Test para crear un tema en una materia"""
-        # Crear materia primero
-        materia_response = client.post(
-            "/api/materias/crear",
-            headers={"x-role": "ADMIN"},
-            json={
-                "nombre": "Test Materia",
-                "semestre": 1,
-                "carrera_id": 1
-            }
-        )
-        materia_id = materia_response.json()["id"]
-        
-        # Crear tema
-        response = client.post(
-            f"/api/materias/{materia_id}/temas",
-            headers={"x-role": "ADMIN"},
-            json={
-                "nombre": "Test Tema",
-                "descripcion": "Descripción del tema"
-            }
-        )
-        assert response.status_code == 201
-        data = response.json()
-        assert data["nombre"] == "Test Tema"
-        assert data["materia_id"] == materia_id
-
-
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

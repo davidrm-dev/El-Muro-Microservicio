@@ -35,32 +35,16 @@ class CarreraDetailResponse(CarreraResponse):
     materias: List["MateriaResponse"] = []
 
 
-class MateriaBase(BaseModel):
-    """Schema base para Materia"""
-    nombre: str = Field(..., min_length=3, max_length=255)
-    semestre: int = Field(..., ge=1, le=10, example=1)
-
-
-class MateriaCreate(MateriaBase):
-    pass
-
-
-class MateriaResponse(MateriaBase):
-    """Schema para respuesta de Materia"""
+class MateriaResponse(BaseModel):
+    """Resumen de materia obtenido desde materias-service"""
     id: int
+    nombre: str
+    descripcion: Optional[str] = None
+    semestre: int
     carrera_id: int
-    created_at: datetime
-    updated_at: datetime
-    
-    class Config:
-        from_attributes = True
-
-
-class MateriaDetailResponse(MateriaResponse):
-    """Schema detallado de Materia"""
-    carrera: Optional[CarreraResponse] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
 
 
 # Actualizar referencias forward
 CarreraDetailResponse.model_rebuild()
-MateriaDetailResponse.model_rebuild()

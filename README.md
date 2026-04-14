@@ -12,8 +12,10 @@ Arquitectura distribuida políglota para la gestión académica y social. Los mi
 ├── /services
 │   ├── /auth-service              # David: TS + MongoDB (Puerto 3000)
 │   │   └── /src/database/seeds    # Scripts de población de usuarios/roles
-│   ├── /materias-service          # Karen: Python + PostgreSQL (Puerto 8001)
-│   │   └── /scripts/seeds         # Scripts SQL/Python para materias y carreras
+│   ├── /carreras-service          # Karen: Python + PostgreSQL (Puerto 8001)
+│   │   └── /scripts               # Seed de carreras
+│   ├── /materias-service          # Karen: Python + PostgreSQL (Puerto 8002)
+│   │   └── /scripts/seeds         # Scripts SQL/Python para materias
 │   ├── /posts-service             # Angela: Java + MongoDB (Puerto 8002)
 │   │   └── /src/main/resources    # data.json o scripts de inicialización
 │   └── /temas-service             # Anthony: Python + MongoDB (Puerto 8003)

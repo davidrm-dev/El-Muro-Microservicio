@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI):
     # Startup
     eureka_client.init(
         eureka_server=settings.eureka_server,
-        app_name="materias-service",
+        app_name=settings.service_name,
         instance_port=settings.service_port
     )
     Base.metadata.create_all(bind=engine)
@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
 # Crear aplicación FastAPI
 app = FastAPI(
     title="Materias Service",
-    description="Microservicio de gestión de materias y temas para El Muro",
+    description="Microservicio de gestión de materias para El Muro",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -38,7 +38,7 @@ app = FastAPI(
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

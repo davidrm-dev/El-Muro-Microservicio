@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 from app.core.config import get_settings
 from app.core.database import Base, engine
 from app.routers import carreras
-from app.routers import materias as materias_router
 
 settings = get_settings()
 
@@ -17,7 +16,7 @@ async def lifespan(app: FastAPI):
     # Startup
     eureka_client.init(
         eureka_server=settings.eureka_server,
-        app_name="carreras-service",
+        app_name=settings.service_name,
         instance_port=settings.service_port
     )
     Base.metadata.create_all(bind=engine)
@@ -39,7 +38,7 @@ app = FastAPI(
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.allowed_origins,
+    allow_origins=settings.cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -47,7 +46,6 @@ app.add_middleware(
 
 # Incluir routers
 app.include_router(carreras.router)
-app.include_router(materias_router.router)
 
 
 @app.get("/")

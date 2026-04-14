@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from app.models.materia import Materia, Tema
-from app.schemas.materia import MateriaCreate, MateriaUpdate, TemaCreate
+from app.models.materia import Materia
+from app.schemas.materia import MateriaCreate, MateriaUpdate
 from app.core.config import get_settings
 from fastapi import HTTPException
 import httpx
@@ -117,51 +117,3 @@ class MateriaService:
     def get_materia_count(db: Session) -> int:
         """Obtener cantidad total de materias"""
         return db.query(func.count(Materia.id)).scalar()
-
-
-class TemaService:
-    """Servicio para operaciones de Tema"""
-    
-    @staticmethod
-    def create_tema(db: Session, materia_id: int, tema_data: TemaCreate) -> Tema:
-        """Crear un nuevo tema"""
-        # Verificar que la materia existe
-        materia = db.query(Materia).filter(Materia.id == materia_id).first()
-        if not materia:
-            raise HTTPException(status_code=404, detail="Materia no encontrada")
-        
-        db_tema = Tema(
-            nombre=tema_data.nombre.strip(),
-            descripcion=tema_data.descripcion,
-            materia_id=materia_id
-        )
-        db.add(db_tema)
-        db.commit()
-        db.refresh(db_tema)
-        return db_tema
-    
-    @staticmethod
-    def get_tema_by_id(db: Session, tema_id: int) -> Tema:
-        """Obtener un tema por ID"""
-        tema = db.query(Tema).filter(Tema.id == tema_id).first()
-        if not tema:
-            raise HTTPException(status_code=404, detail="Tema no encontrado")
-        return tema
-    
-    @staticmethod
-    def get_temas_by_materia(db: Session, materia_id: int) -> list[Tema]:
-        """Obtener todos los temas de una materia"""
-        # Verificar que la materia existe
-        materia = db.query(Materia).filter(Materia.id == materia_id).first()
-        if not materia:
-            raise HTTPException(status_code=404, detail="Materia no encontrada")
-        
-        return db.query(Tema).filter(Tema.materia_id == materia_id).all()
-    
-    @staticmethod
-    def delete_tema(db: Session, tema_id: int) -> dict:
-        """Eliminar un tema"""
-        tema = TemaService.get_tema_by_id(db, tema_id)
-        db.delete(tema)
-        db.commit()
-        return {"message": "Tema eliminado exitosamente"}

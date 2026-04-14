@@ -1,28 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional
 from datetime import datetime
-
-
-class TemaBase(BaseModel):
-    """Schema base para Tema"""
-    nombre: str = Field(..., min_length=3, max_length=255)
-    descripcion: Optional[str] = Field(None, max_length=1000)
-
-
-class TemaCreate(TemaBase):
-    """Schema para crear un Tema"""
-    pass
-
-
-class TemaResponse(TemaBase):
-    """Schema para respuesta de Tema"""
-    id: int
-    materia_id: int
-    created_at: datetime
-    updated_at: datetime
-    
-    class Config:
-        from_attributes = True
 
 
 class MateriaBase(BaseModel):
@@ -59,5 +37,5 @@ class MateriaResponse(MateriaBase):
 
 
 class MateriaDetailResponse(MateriaResponse):
-    """Schema detallado de Materia con temas"""
-    temas: List[TemaResponse] = []
+    """Schema detallado de Materia"""
+    pass

@@ -1,50 +1,35 @@
-# ============================================================
-# ARCHIVOS Y DIRECTORIOS SENSIBLES - NO SUBIR A GITHUB
-# ============================================================
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# ========== VARIABLES DE ENTORNO ==========
+# Environment files
 .env
 .env.local
 .env.*.local
 *.env
 !.env.example
 
-# ========== NODE.JS (Auth Service, Frontend) ==========
+# Node.js
 node_modules/
-npm-debug.log
+package-lock.json
+yarn.lock
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-package-lock.json
-yarn.lock
+pnpm-debug.log*
 .npm
 .eslintcache
 
-# ========== PYTHON (Carreras Service, Materias Service, Temas Service) ==========
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
 .Python
 env/
 venv/
 ENV/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+.venv
 .pytest_cache/
 .coverage
 htmlcov/
@@ -52,197 +37,103 @@ htmlcov/
 .dmypy.json
 dmypy.json
 .pyre/
-*.pyo
-.venv
 
-# ========== IDE Y EDITORES ==========
+# Java / Maven
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+.gradle/
+.classpath
+.project
+.settings/
+
+# Build and cache
+build/
+dist/
+out/
+coverage/
+.nyc_output
+lcov.info
+.cache/
+tmp/
+temp/
+.tmp/
+*.tgz
+
+# IDE / editor
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-.DS_Store
-.AppleDouble
-.LSOverride
 *.sublime-project
 *.sublime-workspace
-.env.local
 .history/
-.ionide
 
-# ========== DOCKS Y LOGS ==========
-*.log
-logs/
-*.log*
-lerna-debug.log*
-
-# ========== BASES DE DATOS LOCALES ==========
-*.db
-*.sqlite
-*.sqlite3
-postgres_data/
-mongo_data/
-db_backup/
-
-# ========== CACHE Y TEMPORALES ==========
-.cache/
-tmp/
-temp/
-.tmp/
-dist/
-build/
-*.tgz
-
-# ========== DOCKER ==========
+# Docker
 .dockerignore
 docker-compose.override.yml
 
-# ========== CONFIGURACIONES LOCALES ==========
-.DS_Store
-.vscode/settings.json
-.vscode/launch.json
-.editorconfig
+# Local data and backups
+postgres_data/
+mongo_data/
+db_backup/
+*.bak
+*.backup
+backup/
+backups/
 
-# ========== ARCHIVOS DE BUILD ==========
-/build
-/dist
-out/
-*.o
-*.so
-*.dylib
-*.exe
-*.app
-
-# ========== CERTIFICADOS Y CLAVES ==========
+# Secrets and credentials
 *.pem
 *.key
 *.crt
 *.keystore
 *.jks
-
-# ========== ARCHIVOS GENERADOS AUTOMÁTICAMENTE ==========
-.gradle/
-*.class
-*.jar
-.classpath
-.project
-.settings/
-local.properties
-
-# ========== TEST COVERAGE ==========
-coverage/
-.nyc_output
-lcov.info
-
-# ========== DEPENDENCIAS DEL SISTEMA (Instalar sin commitear) ==========
-vendor/
-Gemfile.lock
-composer.lock
-poetry.lock
-Pipfile.lock
-
-# ========== DIRECTORIOS ESPECÍFICOS POR SERVICIO ==========
-
-# Auth Service (Node.js)
-services/auth-service/.env
-services/auth-service/node_modules/
-services/auth-service/dist/
-services/auth-service/.env.local
-
-# Carreras Service (Python)
-services/carreras-service/.env
-services/carreras-service/venv/
-services/carreras-service/__pycache__/
-services/carreras-service/.pytest_cache/
-services/carreras-service/htmlcov/
-
-# Materias Service (Python)
-services/materias-service/.env
-services/materias-service/venv/
-services/materias-service/__pycache__/
-services/materias-service/.pytest_cache/
-services/materias-service/htmlcov/
-
-# Posts Service (Java)
-services/posts-service/.env
-services/posts-service/target/
-services/posts-service/.classpath
-services/posts-service/.project
-
-# Temas Service (Python)
-services/temas-service/.env
-services/temas-service/venv/
-services/temas-service/__pycache__/
-services/temas-service/.pytest_cache/
-
-# Frontend (React)
-frontend/.env
-frontend/.env.local
-frontend/node_modules/
-frontend/dist/
-frontend/build/
-
-# Infrastructure
-infrastructure/postgres_data/
-infrastructure/mongo_data/
-
-# ========== ARCHIVOS NO DOCUMENTADOS ==========
-# Cualquier archivo que no esté en el README debe ser revisado
-*.orig
-*.rej
-*.bak
-.#*
-*~.nib
-*~
-.swp
-*~
-
-# ========== BACKUPS ==========
-*.backup
-*.bak
-backup/
-backups/
-
-# ========== ARCHIVOS DE SISTEMA ==========
-.DS_Store
-Thumbs.db
-desktop.ini
-$RECYCLE.BIN/
-
-# ========== OS TEMP FILES ==========
-.AppleDouble
-.LSOverride
-.DocumentRevisions-V100
-.fseventsd
-.TemporaryItems
-.Trashes
-.Spotlight-V100
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# ========== CONFIGURACIONES SENSIBLES ==========
 .aws/
 .ssh/
 .config
 secrets/
 credentials
 
-# ========== ARCHIVOS DE DESARROLLO PERSONAL ==========
-.todo
-.scratch
-.notes
-*.tmp
-temp_*.py
-test_*.js
+# Service-specific
+services/auth-service/.env
+services/auth-service/.env.local
+services/auth-service/node_modules/
+services/auth-service/dist/
+services/carreras-service/.env
+services/carreras-service/venv/
+services/carreras-service/__pycache__/
+services/carreras-service/.pytest_cache/
+services/carreras-service/htmlcov/
+services/materias-service/.env
+services/materias-service/venv/
+services/materias-service/__pycache__/
+services/materias-service/.pytest_cache/
+services/materias-service/htmlcov/
+services/posts-service/.env
+services/posts-service/target/
+services/posts-service/.classpath
+services/posts-service/.project
+services/temas-service/.env
+services/temas-service/venv/
+services/temas-service/__pycache__/
+services/temas-service/.pytest_cache/
+frontend/.env
+frontend/.env.local
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+infrastructure/postgres_data/
+infrastructure/mongo_data/
 
-# ========== LOCKFILES DE VERSIÓN (algunas veces pueden ser documentados si todos los devs los usan igual) ==========
-# Descomentar si quieres permitir los lockfiles
-# !package-lock.json
-# !yarn.lock
-# !Pipfile.lock
-
-# ========== INCLUIR AUNQUE NO SEA CONTENIDO DE CÓDIGO ==========
-!.gitkeep
-!.github/
-!**/README.md
-!**/LICENSE
+# Generated or temp files
+*.orig
+*.rej
+*.app
+*.exe
+*.dylib
+*.so
+*.o
+*.sqlite
+*.sqlite3

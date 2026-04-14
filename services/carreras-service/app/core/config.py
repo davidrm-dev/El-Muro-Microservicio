@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     
     # CORS
-    allowed_origins: list = ["*"]
+    allowed_origins: str = "*"
     
     # Otros servicios
     materias_service_url: str = "http://materias-service:8002"
@@ -35,6 +35,10 @@ class Settings(BaseSettings):
         # Si secret_key no se proporciona, usar jwt_secret
         if not self.secret_key:
             self.secret_key = self.jwt_secret
+
+    @property
+    def cors_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.allowed_origins.split(",") if origin.strip()]
     
     class Config:
         env_file = ".env"
