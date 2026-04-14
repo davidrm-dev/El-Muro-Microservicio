@@ -1,0 +1,105 @@
+version: '3.8'
+services:
+  # ==================== Servidor de Descubrimiento ====================
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - el-muro-network
+
+  # ==================== Base de Datos - Carreras (PostgreSQL) ====================
+  carreras-db:
+    image: postgres:15-alpine
+    container_name: carreras-db
+    environment:
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: carreras_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - carreras-db-data:/var/lib/postgresql/data
+    networks:
+      - el-muro-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usuario -d carreras_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== Base de Datos - Materias (PostgreSQL) ====================
+  materias-db:
+    image: postgres:15-alpine
+    container_name: materias-db
+    environment:
+      POSTGRES_USER: usuario
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: materias_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - materias-db-data:/var/lib/postgresql/data
+    networks:
+      - el-muro-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U usuario -d materias_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== Base de Datos (MongoDB) ====================
+  # MongoDB Centralizado para los microservicios: auth-service, posts-service y temas-service
+  mongo-db:
+    image: mongo:latest
+    container_name: mongo-db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-db-data:/data/db
+    networks:
+      - el-muro-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== Redis (Caché central) ====================
+  redis-db:
+    image: redis:7-alpine
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - el-muro-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# ==================== Volúmenes ====================
+volumes:
+  carreras-db-data:
+    driver: local
+  materias-db-data:
+    driver: local
+  mongo-db-data:
+    driver: local
+  redis-data:
+    driver: local
+
+
+# ==================== Redes ====================
+networks:
+  el-muro-network:
+    driver: bridge

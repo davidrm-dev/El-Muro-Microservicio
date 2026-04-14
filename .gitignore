@@ -1,26 +1,139 @@
 # OS
 .DS_Store
+Thumbs.db
+desktop.ini
 
 # Environment files
 .env
-.env.*
+.env.local
+.env.*.local
+*.env
 !.env.example
 
 # Node.js
 node_modules/
-dist/
-coverage/
-*.log
+package-lock.json
+yarn.lock
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+.npm
+.eslintcache
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+env/
+venv/
+ENV/
+.venv
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
 
 # Java / Maven
 **/target/
 **/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+.gradle/
+.classpath
+.project
+.settings/
+
+# Build and cache
+build/
+dist/
+out/
+coverage/
+.nyc_output
+lcov.info
+.cache/
+tmp/
+temp/
+.tmp/
+*.tgz
 
 # IDE / editor
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+.history/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Local data and backups
+postgres_data/
+mongo_data/
+db_backup/
+*.bak
+*.backup
+backup/
+backups/
+
+# Secrets and credentials
+*.pem
+*.key
+*.crt
+*.keystore
+*.jks
+.aws/
+.ssh/
+.config
+secrets/
+credentials
+
+# Service-specific
+services/auth-service/.env
+services/auth-service/.env.local
+services/auth-service/node_modules/
+services/auth-service/dist/
+services/carreras-service/.env
+services/carreras-service/venv/
+services/carreras-service/__pycache__/
+services/carreras-service/.pytest_cache/
+services/carreras-service/htmlcov/
+services/materias-service/.env
+services/materias-service/venv/
+services/materias-service/__pycache__/
+services/materias-service/.pytest_cache/
+services/materias-service/htmlcov/
+services/posts-service/.env
+services/posts-service/target/
+services/posts-service/.classpath
+services/posts-service/.project
+services/temas-service/.env
+services/temas-service/venv/
+services/temas-service/__pycache__/
+services/temas-service/.pytest_cache/
+frontend/.env
+frontend/.env.local
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+infrastructure/postgres_data/
+infrastructure/mongo_data/
+
+# Generated or temp files
+*.orig
+*.rej
+*.app
+*.exe
+*.dylib
+*.so
+*.o
+*.sqlite
+*.sqlite3
