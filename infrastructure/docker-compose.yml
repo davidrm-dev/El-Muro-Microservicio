@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   # ==================== Servidor de Descubrimiento ====================
   eureka-server:
@@ -10,6 +9,12 @@ services:
       - "8761:8761"
     networks:
       - el-muro-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/eureka/apps", "-s", "-o", "/dev/null", "-w", "%{http_code}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
   # ==================== Base de Datos - Carreras (PostgreSQL) ====================
   carreras-db:
@@ -86,6 +91,67 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  # ==================== Carreras Service (FastAPI/Python) ====================
+  carreras-service:
+    build:
+      context: ../services/carreras-service
+      dockerfile: Dockerfile
+    container_name: carreras-service
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql://usuario:password@carreras-db:5432/carreras_db
+      - EUREKA_SERVER_URL=http://eureka-server:8761
+    depends_on:
+      carreras-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - el-muro-network
+
+  # ==================== Materias Service (FastAPI/Python) ====================
+  materias-service:
+    build:
+      context: ../services/materias-service
+      dockerfile: Dockerfile
+    container_name: materias-service
+    ports:
+      - "8004:8002"
+    environment:
+      - DATABASE_URL=postgresql://usuario:password@materias-db:5432/materias_db
+      - SERVICE_PORT=8002
+      - EUREKA_SERVER_URL=http://eureka-server:8761
+    depends_on:
+      materias-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - el-muro-network
+
+  # ==================== Temas Service (FastAPI/Python) ====================
+  temas-service:
+    build:
+      context: ../services/temas-service
+      dockerfile: Dockerfile
+    container_name: temas-service
+    ports:
+      - "8003:8003"
+    environment:
+      - MONGO_URI=mongodb://admin:password@mongo-db:27017/
+      - MONGO_DATABASE=temas_db
+      - SERVICE_PORT=8003
+      - EUREKA_SERVER_URL=http://eureka-server:8761
+      - SECRET_KEY=tu-secret-key-super-segura-para-desarrollo-12345
+    depends_on:
+      mongo-db:
+        condition: service_healthy
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - el-muro-network
 
 # ==================== Volúmenes ====================
 volumes:

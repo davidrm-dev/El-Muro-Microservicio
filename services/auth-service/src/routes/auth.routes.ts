@@ -26,5 +26,6 @@ authRouter.patch(
 );
 
 authRouter.patch('/internal/users/:userId/deduct-points', validateInternalService, AuthController.deductPoints);
+authRouter.patch('/internal/users/:userId/add-points', validateInternalService, AuthController.addPoints);
 
 export { authRouter };

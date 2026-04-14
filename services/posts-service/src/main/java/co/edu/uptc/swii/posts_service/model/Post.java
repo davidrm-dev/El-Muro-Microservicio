@@ -19,9 +19,18 @@ public class Post {
     private Boolean blocked;
     private LocalDateTime createdAt;
     private Integer authorId;
-    private Integer topicId;
+    private String topicId;
     private java.util.Set<Integer> unlockedByUsers = new java.util.HashSet<>();
     private java.util.Set<Integer> votedByUsers = new java.util.HashSet<>();
+    private Integer rewardedVotes = 0;
+
+    public Integer getRewardedVotes() {
+        return rewardedVotes;
+    }
+
+    public void setRewardedVotes(Integer rewardedVotes) {
+        this.rewardedVotes = rewardedVotes;
+    }
 
     public Integer getId() {
         return id;
@@ -103,11 +112,11 @@ public class Post {
         this.authorId = authorId;
     }
 
-    public Integer getTopicId() {
+    public String getTopicId() {
         return topicId;
     }
 
-    public void setTopicId(Integer topicId) {
+    public void setTopicId(String topicId) {
         this.topicId = topicId;
     }
 

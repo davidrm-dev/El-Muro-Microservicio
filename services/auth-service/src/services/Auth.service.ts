@@ -34,6 +34,12 @@ interface DeductPointsInput {
   reason?: string;
 }
 
+interface AddPointsInput {
+  userId: string;
+  points: number;
+  reason?: string;
+}
+
 const ADJECTIVES = ['agil', 'bravo', 'claro', 'firme', 'noble', 'audaz', 'sabio', 'tenaz', 'veloz', 'sereno'];
 const ANIMALS = ['condor', 'jaguar', 'zorro', 'lince', 'halcon', 'puma', 'tigre', 'cebra', 'nutria', 'ibis'];
 const UPTC_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@uptc\.edu\.co$/;
@@ -75,29 +81,8 @@ class AuthService {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
 
-  private async callSheerIdSandbox(correo: string, nombre: string): Promise<string> {
-    const requestBody = {
-      firstName: nombre,
-      email: correo,
-      organizationId: 'uptc',
-      verificationType: 'student',
-      metadata: { source: 'auth-service' },
-    };
-
-    const response = await axios.post(`${env.SHEERID_BASE_URL}/verification`, requestBody, {
-      headers: {
-        Authorization: `Bearer ${env.SHEERID_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      timeout: 10000,
-    });
-
-    const verificationId = response.data?.verificationId || response.data?.id;
-    if (!verificationId) {
-      throw new HttpError(502, 'SheerID no retorno verificationId');
-    }
-
-    return verificationId as string;
+  private generateVerificationId(): string {
+    return `verify_${Date.now()}_${Math.random().toString(36).substring(7)}`;
   }
 
   private async sendOtpEmail(correo: string, otpCode: string): Promise<void> {
@@ -139,7 +124,7 @@ class AuthService {
     return nickname;
   }
 
-  async register(input: RegisterInput): Promise<{ userId: string; correo: string; apodo: string }> {
+  async register(input: RegisterInput): Promise<{ userId: string; correo: string; apodo: string; otpCode: string }> {
     const correo = this.normalizeEmail(input.correo);
     this.validateInstitutionalEmail(correo);
 
@@ -148,7 +133,7 @@ class AuthService {
       throw new HttpError(409, 'El correo ya esta registrado');
     }
 
-    const sheerIdVerificationId = await this.callSheerIdSandbox(correo, input.nombre);
+    const verificationId = this.generateVerificationId();
     const apodo = await this.generateUniqueNickname();
     const otpCode = this.generateOtpCode();
 
@@ -158,20 +143,21 @@ class AuthService {
       password: input.password,
       rol: 'estudiante',
       apodo,
-      sheerIdVerificationId,
+      sheerIdVerificationId: verificationId,
       otpCode,
       isVerified: false,
       estaActivo: true,
+      puntos: 5,
       failedLoginAttempts: 0,
       lockUntil: null,
     });
 
-    await this.sendOtpEmail(createdUser.correo, otpCode);
-
+    // Para desarrollo, retornamos el OTP para facilitar pruebas
     return {
       userId: createdUser._id.toString(),
       correo: createdUser.correo,
       apodo: createdUser.apodo,
+      otpCode: otpCode,
     };
   }
 
@@ -305,6 +291,41 @@ class AuthService {
       }
 
       user.puntos -= input.points;
+      await user.save({ session });
+      await session.commitTransaction();
+
+      return { userId: user._id.toString(), puntos: user.puntos };
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+  }
+
+  async addPoints(input: AddPointsInput): Promise<{ userId: string; puntos: number }> {
+    if (!Number.isFinite(input.points) || input.points <= 0) {
+      throw new HttpError(400, 'La cantidad de puntos a sumar debe ser mayor a cero');
+    }
+
+    const session = await mongoose.startSession();
+    try {
+      session.startTransaction();
+
+      const user = await UserModel.findById(input.userId).session(session);
+      if (!user) {
+        throw new HttpError(404, 'Usuario no encontrado');
+      }
+
+      if (user.rol !== 'estudiante') {
+        throw new HttpError(403, 'Solo aplica para estudiantes');
+      }
+
+      if (!user.estaActivo || !user.isVerified) {
+        throw new HttpError(403, 'Usuario no habilitado para adicion de puntos');
+      }
+
+      user.puntos += input.points;
       await user.save({ session });
       await session.commitTransaction();
 

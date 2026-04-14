@@ -2,7 +2,7 @@ spring:
   application:
     name: posts-service
   mongodb:
-    uri: ${MONGO_URI:mongodb://localhost:27017/posts_service}
+    uri: ${MONGO_URI:mongodb://admin:password@localhost:27017/posts_service?authSource=admin}
   data:
     redis:
       host: ${REDIS_HOST:localhost}
@@ -19,7 +19,7 @@ server:
 
 security:
   jwt:
-    secret: ${JWT_SECRET:change-this-jwt-secret-change-this-jwt-secret}
+    secret: ${JWT_SECRET:tu-secret-key-super-segura-para-desarrollo-12345}
 
 integration:
   internal:
@@ -35,7 +35,7 @@ integration:
     add-points-sign-path: ${AUTH_SERVICE_ADD_POINTS_SIGN_PATH:/internal/users/{userId}/add-points}
   topic-service:
     base-url: ${TOPIC_SERVICE_BASE_URL:http://localhost:8003}
-    exists-path: ${TOPIC_SERVICE_EXISTS_PATH:/api/topics/{topicId}}
+    exists-path: ${TOPIC_SERVICE_EXISTS_PATH:/api/temas/{topicId}}
 
 eureka:
   client:

@@ -66,14 +66,14 @@ public class PostServiceTest {
         mockPost.setBlocked(true);
         mockPost.setCreatedAt(LocalDateTime.now().minusMinutes(5));
         mockPost.setAuthorId(AUTHOR_ID);
-        mockPost.setTopicId(1);
+        mockPost.setTopicId("69ddcd39af373c03557ec194");
     }
 
     @Test
     void testCreatePost_Success() {
-        CreatePostRequest request = new CreatePostRequest("Title", "Desc", null, "Content", 10, 1);
+        CreatePostRequest request = new CreatePostRequest("Title", "Desc", null, "Content", 10, "69ddcd39af373c03557ec194");
         
-        when(topicClient.existsById(1)).thenReturn(true);
+        when(topicClient.existsById("69ddcd39af373c03557ec194")).thenReturn(true);
         when(pointsCacheService.getUserPoints(AUTHOR_ID)).thenReturn(20);
         when(postRepository.findTopByOrderByIdDesc()).thenReturn(Optional.empty());
         when(postRepository.save(any(Post.class))).thenAnswer(i -> {

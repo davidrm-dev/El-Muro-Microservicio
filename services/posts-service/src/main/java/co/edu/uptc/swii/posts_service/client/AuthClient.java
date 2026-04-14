@@ -2,9 +2,9 @@ package co.edu.uptc.swii.posts_service.client;
 
 public interface AuthClient {
 
-    int getUserPoints(Integer userId);
+    int getUserPoints(String userId);
 
-    void deductPoints(Integer userId, int points, String reason);
+    void deductPoints(String userId, int points, String reason);
     
-    void addPoints(Integer userId, int points, String reason);
+    void addPoints(String userId, int points, String reason);
 }

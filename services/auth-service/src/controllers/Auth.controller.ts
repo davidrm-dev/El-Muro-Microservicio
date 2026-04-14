@@ -130,4 +130,20 @@ export class AuthController {
       handleError(res, error);
     }
   }
+
+  static async addPoints(req: Request, res: Response): Promise<void> {
+    try {
+      const userId = AuthController.getPathParam(req.params.userId);
+      const points = Number(req.body.points);
+      const reason = typeof req.body.reason === 'string' ? req.body.reason : undefined;
+      const result = await authService.addPoints({ userId, points, reason });
+
+      res.status(200).json({
+        message: 'Adicion de puntos aplicada',
+        data: result,
+      });
+    } catch (error) {
+      handleError(res, error);
+    }
+  }
 }

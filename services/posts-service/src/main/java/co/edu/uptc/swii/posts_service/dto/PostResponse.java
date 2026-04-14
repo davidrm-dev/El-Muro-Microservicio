@@ -11,6 +11,6 @@ public record PostResponse(
     Boolean blocked,
     String createdAt,
     Integer authorId,
-    Integer topicId
+    String topicId
 ) {
 }
